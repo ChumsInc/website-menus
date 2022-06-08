@@ -15,7 +15,7 @@ $bodyPath = "apps/website-menus";
 $title = "Website Menus";
 $description = "";
 
-$ui = new WebUI($bodyPath, $title, $description, true, true);
+$ui = new WebUI($bodyPath, $title, $description, true, 5);
 $ui->version = "2019-03-08";
 $ui->bodyClassName = 'container-fluid';
 $ui->AddCSS("public/css/styles.css");
