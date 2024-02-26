@@ -1,6 +1,6 @@
 {
   "name": "website-menus",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "src/index.tsx",
   "scripts": {
     "start": "webpack serve --config webpack.dev.js --progress",
