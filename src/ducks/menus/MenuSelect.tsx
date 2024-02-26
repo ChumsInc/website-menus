@@ -1,17 +1,20 @@
 import React, {SelectHTMLAttributes} from 'react';
-import {useSelector} from "react-redux";
-import {menuSorter, selectMenusList} from "./index";
+import {selectMenuList} from "./selectors";
+import {menuSorter} from "./utils";
+import {useAppSelector} from "../../app/hooks";
+
 
 export interface MenuSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     invalid: number[],
 }
 
-const MenuSelect:React.FC<MenuSelectProps> = ({value, invalid, onChange, ...rest}) => {
-    const list = useSelector(selectMenusList);
+const MenuSelect = ({value, invalid, onChange, ...rest}: MenuSelectProps) => {
+    const list = useAppSelector(selectMenuList);
     return (
         <select className="form-select form-select-sm" value={value} onChange={onChange} {...rest}>
             <option value="0">-- none --</option>
-            {list.sort(menuSorter({field: 'title', ascending: true}))
+            {[...list]
+                .sort(menuSorter({field: 'title', ascending: true}))
                 .map(menu => (
                     <option key={menu.id} value={menu.id} disabled={!menu.status || invalid.includes(menu.id)}>
                         {menu.title}
@@ -21,4 +24,4 @@ const MenuSelect:React.FC<MenuSelectProps> = ({value, invalid, onChange, ...rest
     )
 }
 
-export default React.memo(MenuSelect);
+export default MenuSelect;

@@ -1,9 +1,9 @@
 import {Keyword} from "b2b-types";
-import {fetchJSON} from "chums-ducks";
+import {fetchJSON} from "chums-components";
 
-export const fetchKeywords = async (site:string):Promise<Keyword[]> => {
+export const fetchKeywords = async ():Promise<Keyword[]> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/keywords`;
+        const url = `/api/b2b/keywords`;
         const {result} = await fetchJSON<{result:Keyword[]}>(url);
         return result;
     } catch(err:unknown) {

@@ -2,12 +2,12 @@ import React, {useRef} from 'react';
 import {DropTargetMonitor, useDrag, useDrop} from 'react-dnd';
 import {XYCoord} from "dnd-core";
 import classNames from "classnames";
-import {useDispatch, useSelector} from "react-redux";
-import {currentSiteSelector} from "chums-ducks";
-// import "./ItemCard.scss";
-import {Menu, MenuItem} from "b2b-types";
-import {loadMenuItemAction, selectCurrentItem, selectItemAction} from "../item";
-import {loadMenuAction} from "../menu/actions";
+import {useSelector} from "react-redux";
+import {MenuItem} from "b2b-types";
+import {selectCurrentMenuItem} from "../item/selectors";
+import {loadMenu} from "../menu/actions";
+import {loadMenuItem} from "../item/actions";
+import {useAppDispatch} from "../../app/hooks";
 
 
 interface ItemCardProps {
@@ -26,11 +26,10 @@ const style = {
     cursor: 'move',
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({item, index, moveItem}) => {
-    const dispatch = useDispatch();
+const ItemCard = ({item, index, moveItem}: ItemCardProps) => {
+    const dispatch = useAppDispatch();
     const ref = useRef<HTMLDivElement>(null);
-    const selected = useSelector(selectCurrentItem);
-    const site = useSelector(currentSiteSelector);
+    const selected = useSelector(selectCurrentMenuItem);
 
     const [collectedProps, drop] = useDrop({
         accept: 'item',
@@ -86,24 +85,30 @@ const ItemCard: React.FC<ItemCardProps> = ({item, index, moveItem}) => {
         'text-dark': !!item.url && !!item.menuId,
     };
     const btnClassName = {
-        'btn-light': selected.id === item.id,
-        'btn-dark': selected.id !== item.id
+        'btn-light': selected?.id === item.id,
+        'btn-dark': selected?.id !== item.id
     };
 
     const clickHandler = () => {
-        dispatch(loadMenuItemAction(item.id));
+        dispatch(loadMenuItem(item));
     };
 
-    const selectMenuHandler = (id?:number) => dispatch(loadMenuAction(id));
+    const selectMenuHandler = (id?: number) => {
+        if (id) {
+            dispatch(loadMenu(id));
+        }
+    }
 
     return (
         <div ref={ref} style={{...style, opacity}}
              className={classNames("sortable-item", className)}>
             <div className="item-title" title={item.url}>
-                <span className={classNames("me-3", {'bi-toggle2-off': !item.status, 'bi-toggle2-on': !!item.status} )}/>
+                <span className={classNames("me-3", {'bi-toggle2-off': !item.status, 'bi-toggle2-on': !!item.status})}/>
                 {item.title}
             </div>
-            {!!item.menu && <button  type="button" className="btn btn-sm btn-outline-dark" onClick={() => selectMenuHandler(item.menu?.id)}>{item.menu.title}<span className="ms-1 bi-arrow-up-circle" /></button>}
+            {!!item.menu && <button type="button" className="btn btn-sm btn-outline-dark"
+                                    onClick={() => selectMenuHandler(item.menu?.id)}>{item.menu.title}<span
+                className="ms-1 bi-arrow-up-circle"/></button>}
             <button type="button" onClick={clickHandler} className={classNames("btn btn-sm", btnClassName)}>
                 Edit Item
             </button>

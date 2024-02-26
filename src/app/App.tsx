@@ -1,19 +1,18 @@
 import React, {useEffect} from 'react';
-import {AlertList, currentSiteSelector} from "chums-ducks";
-import MenuList from "./ducks/menus/MenuList";
-import MenuEditor from "./ducks/menu/MenuEditor";
-import MenuItemList from "./ducks/items/MenuItemList";
-import ItemEditor from "./ducks/item/ItemEditor";
-import {useDispatch, useSelector} from "react-redux";
-import {loadKeywords, loadKeywordsAction} from "./ducks/keywords";
+import AlertList from "../ducks/alerts/AlertList";
+import MenuList from "../ducks/menus/MenuList";
+import MenuEditor from "../ducks/menu/MenuEditor";
+import MenuItemList from "../ducks/items/MenuItemList";
+import ItemEditor from "../ducks/item/ItemEditor";
+import {loadKeywords} from "../ducks/keywords";
+import {useAppDispatch} from "./hooks";
 
 const App: React.FC = () => {
-    const dispatch = useDispatch();
-    const site = useSelector(currentSiteSelector);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(loadKeywordsAction(site.name));
-    }, [site])
+        dispatch(loadKeywords());
+    }, [])
 
     return (
         <div>
@@ -29,7 +28,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="col-4">
                     <h2>Edit Item</h2>
-                    <ItemEditor />
+                    <ItemEditor/>
                 </div>
             </div>
         </div>

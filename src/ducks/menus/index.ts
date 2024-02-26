@@ -1,150 +1,72 @@
-import {combineReducers} from "redux";
-import {
-    ActionInterface,
-    ActionPayload,
-    currentSiteSelector,
-    dismissContextAlertAction,
-    selectAlertListByContext,
-    selectTableSort,
-    siteSelected,
-    SortableTableField,
-    SorterProps
-} from "chums-ducks";
 import {Menu} from "b2b-types";
-import {ThunkAction} from "redux-thunk";
-import {RootState} from "../index";
-import {apiActionHelper} from "../utils";
-import {getMenuListAPI} from "../../api/menu";
-import {createSelector} from "reselect";
+import {SortProps} from "chums-components";
+import {createReducer} from "@reduxjs/toolkit";
+import {loadMenuList, setMenuListSort, toggleShowInactive} from "./actions";
+import {menuSorter} from "./utils";
+import {loadMenu, removeMenu, saveMenu} from "../menu/actions";
+import menu from "../menu";
 
-
-export interface MenusPayload extends ActionPayload {
-    list?: Menu[],
+export interface MenusState {
+    list: Menu[];
+    loading: boolean;
+    loaded: boolean;
+    sort: SortProps<Menu>;
+    showInactive: boolean;
 }
 
-export interface MenusAction extends ActionInterface {
-    payload?: MenusPayload,
+export const initialMenusState: MenusState = {
+    list: [],
+    loading: false,
+    loaded: false,
+    sort: {field: 'id', ascending: true},
+    showInactive: false,
 }
 
-interface MenusThunkAction extends ThunkAction<any, RootState, unknown, MenusAction> {
-}
-
-export type MenuSortField = keyof Omit<Menu, 'status' | 'items' | 'parents'>
-
-export interface MenuSortProps extends SorterProps {
-    field: MenuSortField
-}
-
-export interface MenuTableField extends SortableTableField {
-    field: MenuSortField,
-}
-
-export const MENU_TABLE_KEY = 'menu-list';
-
-export const menuSorter = ({field, ascending}: MenuSortProps) => (a: Menu, b: Menu) => {
-    const ascMod = ascending ? 1 : -1;
-    switch (field) {
-    case 'id':
-        return (a[field] - b[field]) * ascMod;
-    default:
-        return (a[field].toLowerCase() === b[field].toLowerCase()
-            ? a.id - b.id
-            : (a[field].toLowerCase() > b[field].toLowerCase() ? 1 : -1)) * ascMod;
-    }
-}
-
-const toggleInactiveMenus = 'menus/toggleInactive';
-const loadMenuList = 'menus/loadList';
-const [loadMenuListPending, loadMenuListResolved, loadMenuListRejected] = apiActionHelper(loadMenuList);
-
-export const selectMenusList = (state: RootState) => state.menus.list;
-export const selectMenusLoading = (state: RootState) => state.menus.loading;
-export const selectMenusLoaded = (state: RootState) => state.menus.loaded;
-export const selectFilterInactive = (state: RootState) => state.menus.filterInactive;
-
-export const selectSortedMenuList = createSelector(
-    [selectMenusList, selectFilterInactive, selectTableSort(MENU_TABLE_KEY)],
-    (list, filterInactive, sort) => {
-        return list.filter(item => !filterInactive || !!item.status)
-            .sort(menuSorter(sort as MenuSortProps));
-    });
-
-export const loadMenusAction = (): MenusThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectMenusLoading(state)) {
-                return;
+const menusReducer = createReducer(initialMenusState, (builder) => {
+    builder
+        .addCase(loadMenuList.pending, (state) => {
+            state.loading = true;
+        })
+        .addCase(loadMenuList.fulfilled, (state, action) => {
+            state.loading = false;
+            state.loaded = true;
+            state.list = [...action.payload].sort(menuSorter(initialMenusState.sort));
+        })
+        .addCase(loadMenuList.rejected, (state) => {
+            state.loading = false;
+        })
+        .addCase(toggleShowInactive, (state, action) => {
+            state.showInactive = action.payload ?? !state.showInactive;
+        })
+        .addCase(setMenuListSort, (state, action) => {
+            state.sort = action.payload;
+        })
+        .addCase(loadMenu.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.list = [
+                    ...state.list.filter(menu => menu.id !== action.meta.arg),
+                    action.payload
+                ].sort(menuSorter(initialMenusState.sort))
+            } else {
+                state.list = state.list.filter(menu => menu.id !== action.meta.arg).sort(menuSorter(initialMenusState.sort))
             }
-            const site = currentSiteSelector(state);
-            dispatch({type: loadMenuListPending});
-            const list = await getMenuListAPI(site.name);
-            dispatch({type: loadMenuListResolved, payload: {list}});
-            if (selectAlertListByContext(loadMenuList)(state).length) {
-                dispatch(dismissContextAlertAction(loadMenuList));
+        })
+        .addCase(saveMenu.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.list = [
+                    ...state.list.filter(menu => menu.id !== action.meta.arg.id),
+                    action.payload
+                ].sort(menuSorter(initialMenusState.sort))
+            } else {
+                state.list = state.list.filter(menu => menu.id !== action.meta.arg.id).sort(menuSorter(initialMenusState.sort))
             }
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("loadMenusAction()", error.message);
-                return dispatch({type: loadMenuListRejected, payload: {error, context: loadMenuList}})
-            }
-            console.error("loadMenusAction()", error);
-        }
-    }
-
-export const toggleFilterInactiveAction = () => ({type: toggleInactiveMenus});
-
-
-const listReducer = (state: Menu[] = [], action: MenusAction): Menu[] => {
-    const {type, payload} = action;
-    switch (type) {
-    case loadMenuListResolved:
-        if (payload?.list) {
-            return [...payload.list.sort((a, b) => a.id > b.id ? 1 : -1)];
-        }
-        return [];
-    case siteSelected:
-        return [];
-    default:
-        return state;
-    }
-}
-
-const loadingReducer = (state: boolean = false, action: MenusAction): boolean => {
-    switch (action.type) {
-    case loadMenuListPending:
-        return true;
-    case loadMenuListResolved:
-    case loadMenuListRejected:
-        return false;
-    default:
-        return state;
-    }
-}
-
-const loadedReducer = (state: boolean = false, action: MenusAction): boolean => {
-    switch (action.type) {
-    case loadMenuListResolved:
-        return true;
-    case siteSelected:
-        return false;
-    default:
-        return state;
-    }
-}
-
-const filterInactiveReducer = (state: boolean = true, action: MenusAction): boolean => {
-    switch (action.type) {
-    case toggleInactiveMenus:
-        return !state;
-    default:
-        return state;
-    }
-}
-
-export default combineReducers({
-    list: listReducer,
-    loading: loadingReducer,
-    loaded: loadedReducer,
-    filterInactive: filterInactiveReducer,
+        })
+        .addCase(removeMenu.fulfilled, (state, action) => {
+            state.list = state.list.filter(menu => menu.id !== action.meta.arg)
+                .sort(menuSorter(initialMenusState.sort))
+        })
 });
+
+
+export default menusReducer;
+

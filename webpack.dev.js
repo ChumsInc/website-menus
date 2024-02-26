@@ -4,7 +4,11 @@ const common = require('./webpack.common.js');
 const path = require('path')
 
 const localProxy = {
-    target: 'http://localhost:8081',
+    target: {
+        host: 'localhost',
+        protocol: 'http:',
+        port: 8081
+    },
     ignorePath: false,
     changeOrigin: true,
     secure: false,
@@ -13,30 +17,17 @@ const localProxy = {
 module.exports = merge(common, {
     mode: 'development',
     devServer: {
-        static: [{
-            directory: path.join(__dirname, 'public'),
-            watch: false,
-        }, {
-            directory: path.join(__dirname, 'node_modules'),
-            publicPath: '/node_modules',
-            watch: false,
-        }],
+        allowedHosts: 'auto',
+        static: [
+            {directory: path.join(process.cwd(), 'public'), watch: false},
+            {directory: path.join(process.cwd(), 'node_modules'), publicPath: '/node_modules', watch: false}
+        ],
         hot: true,
-        proxy: {
-            '/api': {...localProxy},
-            '/node-b2b/': {...localProxy},
-            '/node-safety/': {...localProxy},
-            '/node-dev/': {...localProxy},
-            '/node-sage/': {...localProxy},
-            '/sage/': {...localProxy},
-        },
-        watchFiles: {
-            paths: 'src/**/*',
-            options: {
-                cwd: path.join(__dirname, '/')
-            }
-        },
+        proxy: [
+            {context: ['/api', '/node-b2b', '/node-sage', '/sage'], ...localProxy}
+        ],
+        watchFiles: 'src/**/*',
     },
-    devtool: 'inline-source-map',
+    devtool: 'eval-source-map',
     plugins: []
 });

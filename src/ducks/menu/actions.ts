@@ -1,83 +1,66 @@
-import {ThunkAction} from "redux-thunk";
-import {RootState} from "../index";
-import {
-    defaultMenu,
-    loadMenu,
-    loadMenuPending,
-    loadMenuRejected,
-    loadMenuResolved,
-    MenuAction,
-    menuSelected, MenuThunkAction,
-    menuUpdated,
-    saveSort,
-    saveSortRejected
-} from "./actionTypes";
-import {selectCurrentMenu, selectCurrentMenuLoading} from "./selectors";
-import {currentSiteSelector} from "chums-ducks";
-import {getMenuAPI, postMenuAPI} from "../../api/menu";
+import {RootState} from "../../app/configureStore";
+import {selectCurrentMenu, selectCurrentMenuStatus} from "./selectors";
+import {deleteMenuAPI, fetchMenu, postMenu, postItemSort} from "../../api/menu";
 import {Menu, MenuItem} from "b2b-types";
+import {createAction, createAsyncThunk} from "@reduxjs/toolkit";
 
+export const updateMenu = createAction<Partial<Menu>>('menu/update');
 
-export const menuUpdatedAction = (props: Partial<Menu>) => ({type: menuUpdated, payload: {props}});
+export const setNewMenu = createAction('menu/new');
 
-export const loadMenuAction = (id?: number): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            if (!id) {
-                dispatch({type: menuSelected, payload: {menu: defaultMenu}});
-                return;
-            }
-            const state = getState();
-            if (selectCurrentMenuLoading(state)) {
-                return;
-            }
-            const {name: site} = currentSiteSelector(state);
-            dispatch({type: loadMenuPending});
-            const menu = await getMenuAPI(site, id);
-            dispatch({type: loadMenuResolved, payload: {menu: menu || defaultMenu}})
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("loadMenuAction()", error.message);
-                return dispatch({type: loadMenuRejected, payload: {error, context: loadMenu}})
-            }
-            console.error("loadMenuAction()", error);
+export const loadMenu = createAsyncThunk<Menu | null, number>(
+    'menu/load',
+    async (arg) => {
+        return await fetchMenu(arg);
+    },
+    {
+        condition: (arg, {getState}) => {
+            const state = getState() as RootState;
+            return !!arg && selectCurrentMenuStatus(state) === 'idle';
         }
     }
+)
 
-export const saveMenuAction = (): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectCurrentMenuLoading(state)) {
-                return;
-            }
-            const {name: site} = currentSiteSelector(state);
-            const _menu = selectCurrentMenu(state);
-            if (!_menu.title) {
-                return;
-            }
-            dispatch({type: loadMenuPending});
-            const menu = await postMenuAPI(site, _menu);
-            dispatch({type: loadMenuResolved, payload: {menu: menu || defaultMenu}});
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("loadMenuAction()", error.message);
-                return dispatch({type: loadMenuRejected, payload: {error, context: loadMenu}});
-            }
-            console.error("loadMenuAction()", error);
+export const saveMenu = createAsyncThunk<Menu | null, Menu>(
+    'menu/save',
+    async (arg) => {
+        return await postMenu(arg);
+    },
+    {
+        condition: (arg, {getState}) => {
+            const state = getState() as RootState;
+            return !!arg.title && selectCurrentMenuStatus(state) === 'idle';
         }
     }
+)
 
-export const saveMenuSort = (): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("menuSaveSort()", error.message);
-                return dispatch({type: saveSortRejected, payload: {error, context: saveSort}})
-            }
-            console.error("menuSaveSort()", error);
+export const saveMenuSort = createAsyncThunk<MenuItem[], number[]>(
+    'menu/saveSort',
+    async (arg, {getState}) => {
+        const state = getState() as RootState;
+        const menu = selectCurrentMenu(state);
+        return await postItemSort(menu!.id, arg);
+    },
+    {
+        condition: (arg, {getState}) => {
+            const state = getState() as RootState;
+            return !!arg.length
+                && !!selectCurrentMenu(state)
+                && selectCurrentMenuStatus(state) === 'idle';
         }
     }
+)
 
+export const removeMenu = createAsyncThunk<void, number>(
+    'menu/remove',
+    async (arg) => {
+        return await deleteMenuAPI(arg);
+    },
+    {
+        condition: (arg, {getState}) => {
+            const state = getState() as RootState;
+            return !!arg && selectCurrentMenuStatus(state) === 'idle';
+        }
+    }
+)

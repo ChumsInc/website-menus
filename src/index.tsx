@@ -1,23 +1,16 @@
 import React from 'react';
-import { render } from 'react-dom';
 import {Provider} from 'react-redux';
-import { createStore, applyMiddleware, compose } from 'redux';
-import thunk from 'redux-thunk';
-import reducer from './ducks';
-import App from './App';
+import App from './app/App';
+import {createRoot} from "react-dom/client";
+import store from "./app/configureStore";
 
-declare global {
-    interface Window {
-        __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose;
-    }
-}
-
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-
-const store = createStore(reducer, composeEnhancers(applyMiddleware(thunk)));
-
-render(
-    <Provider store={store}>
-        <App/>
-    </Provider>, document.getElementById('app')
+window.localStorage.setItem('debug', '*');
+const container = document.getElementById('app');
+const root = createRoot(container!);
+root.render(
+    <React.StrictMode>
+        <Provider store={store}>
+            <App/>
+        </Provider>
+    </React.StrictMode>
 );

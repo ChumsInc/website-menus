@@ -1,115 +1,91 @@
-import {combineReducers} from "redux";
-import {
-    loadMenuPending,
-    loadMenuRejected,
-    loadMenuResolved,
-    MenuAction, menuSelected,
-    MenuThunkAction,
-    saveMenuPending,
-    saveMenuRejected,
-    saveMenuResolved,
-    saveSort,
-    saveSortPending,
-    saveSortRejected,
-    saveSortResolved
-} from "../menu/actionTypes";
 import {MenuItem} from "b2b-types";
-import {RootState} from "../index";
-import {saveItemSort} from "../../api/menu";
-import {currentSiteSelector} from "chums-ducks";
+import {RootState} from "../../app/configureStore";
+import {postItemSort} from "../../api/menu";
 import {selectCurrentMenu} from "../menu/selectors";
-import {deleteMenuItemResolved, saveMenuItemResolved} from "../item";
+import {createAsyncThunk, createReducer} from "@reduxjs/toolkit";
+import {loadMenu, setNewMenu} from "../menu/actions";
+import {loadMenuItem, removeMenuItem, saveMenuItem} from "../item/actions";
+
+export interface ItemsState {
+    list: MenuItem[];
+    status: 'idle' | 'saving' | 'saving-sort' | 'deleting' | 'loading';
+    currentSort: string;
+}
+
+export const initialState: ItemsState = {
+    list: [],
+    status: 'idle',
+    currentSort: '',
+}
 
 export const prioritySort = (a: MenuItem, b: MenuItem) => a.priority - b.priority;
 
-export const sortOrder = (list: MenuItem[]) => list.sort(prioritySort).map(i => i.id).join(':');
+export const sortOrderKey = (list: MenuItem[]):string => [...list].sort(prioritySort).map(i => i.id).join(':');
 
 export const selectItemList = (state: RootState) => state.items.list;
-export const selectItemsLoading = (state: RootState) => state.items.loading;
-export const selectItemsSaving = (state: RootState) => state.items.savingSort;
-export const selectCurrentSort = (state: RootState) => sortOrder(state.items.list);
+export const selectItemsStatus = (state: RootState) => state.items.status;
+export const selectCurrentSort = (state: RootState) => state.items.currentSort;
 
-export const saveItemSortAction = (items: MenuItem[]): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectItemsLoading(state) || selectItemsSaving(state)) {
-                return;
-            }
-            dispatch({type: saveSortPending});
-            const site = currentSiteSelector(state);
+export const saveItemSort = createAsyncThunk<MenuItem[], MenuItem[]>(
+    'items/saveSort',
+    async (arg, {getState}) => {
+        const state = getState() as RootState;
+        const currentMenu = selectCurrentMenu(state);
+        return await postItemSort(currentMenu!.id, arg.map(item => item.id))
+    },
+    {
+        condition: (arg, {getState}) => {
+            const state = getState() as RootState;
+            const status = selectItemsStatus(state);
             const currentMenu = selectCurrentMenu(state);
-            const list = selectItemList(state).map(i => i.id);
-            const items = await saveItemSort(site.name, currentMenu.id, list);
-            dispatch({type: saveSortResolved, payload: {clearContext: saveSort, items}})
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("saveItemSortAction()", error.message);
-                return dispatch({type: saveSortRejected, payload: {error, context: saveSort}})
+            return !!currentMenu?.id && arg.length > 0 && status === 'idle';
+        }
+    }
+)
+
+const itemsReducer = createReducer(initialState, (builder) => {
+    builder
+        .addCase(loadMenu.fulfilled, (state, action) => {
+            state.list = [...(action.payload?.items ?? [])].sort(prioritySort);
+            state.currentSort = sortOrderKey(state.list);
+        })
+        .addCase(saveItemSort.pending, (state) => {
+            state.status = 'saving-sort';
+        })
+        .addCase(saveItemSort.fulfilled, (state, action) => {
+            state.status = 'idle';
+            state.list = [...action.payload].sort(prioritySort);
+            state.currentSort = sortOrderKey(state.list);
+        })
+        .addCase(saveItemSort.rejected, (state) => {
+            state.status = 'idle';
+        })
+        .addCase(saveMenuItem.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.list = [
+                    ...state.list.filter(item => item.id !== action.payload?.id),
+                    action.payload,
+                ].sort(prioritySort);
+                state.currentSort = sortOrderKey(state.list);
             }
-            console.error("saveItemSortAction()", error);
-        }
-    }
-
-const listReducer = (state: MenuItem[] = [], action: MenuAction): MenuItem[] => {
-    const {type, payload} = action;
-    switch (type) {
-    case saveMenuResolved:
-    case loadMenuResolved:
-    case menuSelected:
-        if (payload?.menu) {
-            return [...(payload.menu.items || [])].sort(prioritySort);
-        }
-        return [];
-    case deleteMenuItemResolved:
-        if (payload?.items) {
-            return [...payload.items].sort(prioritySort);
-        }
-        return state;
-
-    case saveMenuItemResolved:
-        if (payload?.item) {
-            return [
-                ...state.filter(i => i.id !== payload.item?.id),
-                {...payload.item}
-            ].sort(prioritySort);
-        }
-        return state;
-    default:
-        return state;
-    }
-}
-
-const loadingReducer = (state: boolean = false, action: MenuAction): boolean => {
-    switch (action.type) {
-    case loadMenuPending:
-    case saveMenuPending:
-        return true;
-    case loadMenuResolved:
-    case loadMenuRejected:
-    case saveMenuResolved:
-    case saveMenuRejected:
-        return false;
-    default:
-        return state;
-    }
-}
-
-const savingSortReducer = (state: boolean = false, action: MenuAction): boolean => {
-    switch (action.type) {
-    case saveSortPending:
-        return true;
-    case saveSortResolved:
-    case saveSortRejected:
-        return false;
-    default:
-        return state;
-    }
-}
-
-
-export default combineReducers({
-    list: listReducer,
-    loading: loadingReducer,
-    savingSort: savingSortReducer,
+        })
+        .addCase(loadMenuItem.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.list = [
+                    ...state.list.filter(item => item.id !== action.payload?.id),
+                    action.payload,
+                ].sort(prioritySort);
+                state.currentSort = sortOrderKey(state.list);
+            }
+        })
+        .addCase(removeMenuItem.fulfilled, (state, action) => {
+            state.list = [...action.payload].sort(prioritySort);
+            state.currentSort = sortOrderKey(state.list);
+        })
+        .addCase(setNewMenu, (state) => {
+            state.list = [];
+            state.currentSort = sortOrderKey(state.list);
+        })
 });
+
+export default itemsReducer;

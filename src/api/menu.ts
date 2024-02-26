@@ -1,11 +1,12 @@
 import {Menu, MenuItem} from "b2b-types";
-import {fetchJSON} from "chums-ducks";
+import {fetchJSON} from "chums-components";
+import {MenuItemArg} from "../types";
 
-export const getMenuListAPI =  async (site:string):Promise<Menu[]> => {
+export const fetchMenuList =  async ():Promise<Menu[]> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus`;
-        const {menus} = await fetchJSON<{menus:Menu[]}>(url);
-        return menus;
+        const url = `/api/b2b/menus`;
+        const res = await fetchJSON<{menus:Menu[]}>(url);
+        return res.menus ?? [];
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("fetchMenuList()", err.message)
@@ -16,9 +17,9 @@ export const getMenuListAPI =  async (site:string):Promise<Menu[]> => {
     }
 }
 
-export const getMenuAPI = async (site:string, id:number):Promise<Menu|null> => {
+export const fetchMenu = async (id:number):Promise<Menu|null> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/${encodeURIComponent(id)}`;
+        const url = `/api/b2b/menus/${encodeURIComponent(id)}`;
         const {menus} = await fetchJSON<{menus:Menu[]}>(url);
         if (!menus.length) {
             return null;
@@ -35,11 +36,11 @@ export const getMenuAPI = async (site:string, id:number):Promise<Menu|null> => {
     }
 }
 
-export const postMenuAPI = async (site:string, _menu:Menu):Promise<Menu> => {
+export const postMenu = async (arg:Menu):Promise<Menu|null> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus`;
-        const {menu} = await fetchJSON<{menu:Menu}>(url, {method: 'POST', body:JSON.stringify(_menu)});
-        return menu;
+        const url = `/api/b2b/menus`;
+        const res = await fetchJSON<{menu:Menu}>(url, {method: 'POST', body:JSON.stringify(arg)});
+        return res.menu ?? null;
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("saveMenu()", err.message);
@@ -50,23 +51,23 @@ export const postMenuAPI = async (site:string, _menu:Menu):Promise<Menu> => {
     }
 }
 
-export const deleteMenuAPI = async (site:string, id:number):Promise<void> => {
+export const deleteMenuAPI = async (arg:number):Promise<void> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/${encodeURIComponent(id)}`;
+        const url = `/api/b2b/menus/${encodeURIComponent(arg)}`;
         await fetchJSON(url, {method: 'DELETE'});
     } catch(err:unknown) {
         if (err instanceof Error) {
-            console.warn("deleteMenu()", err.message);
+            console.warn("removeMenu()", err.message);
             return Promise.reject(err);
         }
-        console.warn("deleteMenu()", err);
-        return Promise.reject(new Error('Error in deleteMenu()'));
+        console.warn("removeMenu()", err);
+        return Promise.reject(new Error('Error in removeMenu()'));
     }
 }
 
-export const getMenuItemAPI = async (site:string, parentId: number, id: number):Promise<MenuItem|null> => {
+export const fetchMenuItem = async (arg: MenuItemArg):Promise<MenuItem|null> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/${encodeURIComponent(parentId)}/${encodeURIComponent(id)}`;
+        const url = `/api/b2b/menus/${encodeURIComponent(arg.parentId)}/${encodeURIComponent(arg.id)}`;
         const {items} = await fetchJSON<{items:MenuItem[]}>(url);
         if (!items.length) {
             return null;
@@ -83,10 +84,10 @@ export const getMenuItemAPI = async (site:string, parentId: number, id: number):
     }
 }
 
-export const postMenuItemAPI = async (site:string, _item:MenuItem):Promise<MenuItem|null> => {
+export const postMenuItemAPI = async (arg:MenuItem):Promise<MenuItem|null> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/item`;
-        const {item} = await fetchJSON<{item:MenuItem}>(url, {method: 'POST', body: JSON.stringify(_item)});
+        const url = `/api/b2b/menus/item`;
+        const {item} = await fetchJSON<{item:MenuItem}>(url, {method: 'POST', body: JSON.stringify(arg)});
         return item;
     } catch(err:unknown) {
         if (err instanceof Error) {
@@ -98,9 +99,9 @@ export const postMenuItemAPI = async (site:string, _item:MenuItem):Promise<MenuI
     }
 }
 
-export const deleteMenuItemAPI = async (site:string, _item:MenuItem):Promise<MenuItem[]> => {
+export const deleteMenuItemAPI = async (arg:MenuItemArg):Promise<MenuItem[]> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/${encodeURIComponent(_item.parentId)}/${encodeURIComponent(_item.id)}`;
+        const url = `/api/b2b/menus/${encodeURIComponent(arg.parentId)}/${encodeURIComponent(arg.id)}`;
         const {items} = await fetchJSON<{items:MenuItem[]}>(url, {method: 'DELETE'});
         return items || [];
     } catch(err:unknown) {
@@ -113,17 +114,17 @@ export const deleteMenuItemAPI = async (site:string, _item:MenuItem):Promise<Men
     }
 }
 
-export const saveItemSort = async (site:string, parentId: number, idList:number[]):Promise<MenuItem[]> => {
+export const postItemSort = async (parentId: number, idList:number[]):Promise<MenuItem[]> => {
     try {
-        const url = `/node-${encodeURIComponent(site)}/menus/${encodeURIComponent(parentId)}/sort`;
+        const url = `/api/b2b/menus/${encodeURIComponent(parentId)}/sort`;
         const {items} = await fetchJSON<{items:MenuItem[]}>(url, {method: 'POST', body: JSON.stringify({items: idList})});
         return items;
     } catch(err:unknown) {
         if (err instanceof Error) {
-            console.warn("saveItemSort()", err.message);
+            console.warn("postItemSort()", err.message);
             return Promise.reject(err);
         }
-        console.warn("saveItemSort()", err);
-        return Promise.reject(new Error('Error in saveItemSort()'));
+        console.warn("postItemSort()", err);
+        return Promise.reject(new Error('Error in postItemSort()'));
     }
 }

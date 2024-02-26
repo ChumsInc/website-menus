@@ -1,43 +1,50 @@
 import React, {ChangeEvent, FormEvent} from 'react';
-import {useDispatch, useSelector} from "react-redux";
+import {useSelector} from "react-redux";
 import {selectCurrentMenu, selectCurrentMenuLoading} from "./selectors";
 import {Menu} from "b2b-types";
-import {loadMenuAction, menuUpdatedAction, saveMenuAction} from "./actions";
-import {Alert, FormColumn, LoadingProgressBar, StatusButtonGroup} from "chums-ducks";
+import {saveMenu, setNewMenu, updateMenu} from "./actions";
+import {Alert, FormColumn, LoadingProgressBar, StatusButtonGroup} from "chums-components";
+import {useAppDispatch} from "../../app/hooks";
 
 type EditableMenuField = keyof Omit<Menu, 'id' | 'items' | 'parents'>;
 
 const MenuEditor: React.FC = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const menu = useSelector(selectCurrentMenu);
     const loading = useSelector(selectCurrentMenuLoading);
 
     const changeHandler = (field: EditableMenuField) => (ev: ChangeEvent<HTMLInputElement>) => {
-        dispatch(menuUpdatedAction({[field]: ev.target.value}))
+        dispatch(updateMenu({[field]: ev.target.value}))
     }
 
-    const onChangeStatus = (checked: boolean) => dispatch(menuUpdatedAction({status: checked}));
+    const onChangeStatus = (checked: boolean) => dispatch(updateMenu({status: checked}));
 
     const submitHandler = (ev: FormEvent) => {
         ev.preventDefault();
-        dispatch(saveMenuAction());
+        if (!menu) {
+            return;
+        }
+        dispatch(saveMenu(menu));
     }
 
     const onNewMenu = () => {
-        if (!menu.changed || window.confirm('This menu is changed. Do you want to lose your changes?')) {
-            dispatch(loadMenuAction())
+        if (!menu?.changed || window.confirm('This menu is changed. Do you want to lose your changes?')) {
+            dispatch(setNewMenu())
         }
     }
 
     const onDeleteMenu = () => {
-        if (!menu.changed || window.confirm('This menu is changed. Do you want to lose your changes?')) {
+        if (!menu?.changed || window.confirm('This menu is changed. Do you want to lose your changes?')) {
             // dispatch(loadMenuAction())
         }
     }
 
-    return (
-        <div>
+    if (!menu) {
+        return null;
+    }
 
+    return (
+        <div className="mb-1">
             <form onSubmit={submitHandler} className="my-3">
                 <FormColumn label="ID / Status" width={8}>
                     <div className="row g-3">

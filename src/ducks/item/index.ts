@@ -1,189 +1,105 @@
-import {combineReducers} from "redux";
-import {
-    defaultMenuItem,
-    EditableMenuItem,
-    loadMenuResolved,
-    MenuAction,
-    menuItemSelected,
-    MenuThunkAction,
-} from "../menu/actionTypes";
-import {RootState} from "../index";
 import {MenuItem} from "b2b-types";
-import {apiActionHelper} from "../utils";
-import {deleteMenuItemAPI, getMenuItemAPI, postMenuItemAPI} from "../../api/menu";
-import {currentSiteSelector} from "chums-ducks";
-import {useSelector} from "react-redux";
-import {selectCurrentMenu} from "../menu/selectors";
-import {selectItemList} from "../items";
+import {Editable} from "b2b-types/src/generic";
+import {createReducer} from "@reduxjs/toolkit";
+import {loadMenuItem, removeMenuItem, saveMenuItem, setCurrentMenuItem, updateMenuItem} from "./actions";
+import {loadMenu, saveMenu, setNewMenu} from "../menu/actions";
 
-export const menuItemUpdated = 'menu/itemUpdated';
-
-export const saveMenuItem = 'menu/saveMenuItem';
-export const [saveMenuItemPending, saveMenuItemResolved, saveMenuItemRejected] = apiActionHelper(saveMenuItem);
-
-export const loadMenuItem = 'menu/loadMenuItem';
-export const [loadMenuItemPending, loadMenuItemResolved, loadMenuItemRejected] = apiActionHelper(loadMenuItem);
-
-export const deleteMenuItem = 'menu/deleteMenuItem';
-export const [deleteMenuItemPending, deleteMenuItemResolved, deleteMenuItemRejected] = apiActionHelper(deleteMenuItem);
-
-export const selectCurrentItem = (state: RootState) => state.item.selected;
-export const selectCurrentLoading = (state: RootState) => state.item.loading;
-export const selectCurrentItemSaving = (state: RootState) => state.item.saving;
-
-export const selectItemAction = (item: MenuItem): MenuAction => ({type: menuItemSelected, payload: {item}});
-export const updateItemAction = (props: Partial<MenuItem>): MenuAction => ({type: menuItemUpdated, payload: {props}});
-
-export const loadMenuItemAction = (id: number): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectCurrentLoading(state) || selectCurrentItemSaving(state)) {
-                return;
-            }
-            const site = currentSiteSelector(state);
-            const menu = selectCurrentMenu(state);
-            dispatch({type: loadMenuItemPending})
-            const item = await getMenuItemAPI(site.name, menu.id, id);
-            if (!item) {
-                return dispatch({
-                    type: loadMenuItemRejected,
-                    payload: {error: new Error('Menu item not found'), context: loadMenuItem}
-                });
-            }
-            dispatch({type: loadMenuItemResolved, payload: {item, clearContext: loadMenuItem}});
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("loadMenuItemAction()", error.message);
-                return dispatch({type: loadMenuItemRejected, payload: {error, context: loadMenuItem}})
-            }
-            console.error("loadMenuItemAction()", error);
-        }
-    }
-
-export const saveMenuItemAction = (): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectCurrentLoading(state) || selectCurrentItemSaving(state)) {
-                return;
-            }
-            const site = currentSiteSelector(state);
-            const _item = selectCurrentItem(state);
-            const currentMenu = selectCurrentMenu(state);
-            if (!_item.title || !currentMenu.id) {
-                return;
-            }
-            _item.parentId = currentMenu.id;
-            if (_item.id === 0) {
-                const items = selectItemList(state);
-                _item.priority = items.reduce((max, item) => item.priority > max ? item.priority : max , 0) + 1;
-            }
-            dispatch({type: saveMenuItemPending});
-            const item = await postMenuItemAPI(site.name, _item);
-            if (!item) {
-                return dispatch({
-                    type: saveMenuItemRejected,
-                    payload: {error: new Error('Menu item not found'), context: saveMenuItem}
-                });
-            }
-            dispatch({type: saveMenuItemResolved, payload: {item, clearContext: saveMenuItem}});
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log("saveMenuItemAction()", error.message);
-                return dispatch({type: saveMenuItemRejected, payload: {error, context: saveMenuItem}})
-            }
-            console.error("saveMenuItemAction()", error);
-        }
-    }
-
-export const deleteMenuItemAction = (): MenuThunkAction =>
-    async (dispatch, getState) => {
-        try {
-            const state = getState();
-            if (selectCurrentLoading(state) || selectCurrentItemSaving(state)) {
-                return;
-            }
-            dispatch({type: deleteMenuItemPending});
-            const site = currentSiteSelector(state);
-            const _item = selectCurrentItem(state);
-            if (!_item.id) {
-                return;
-            }
-            const items = await deleteMenuItemAPI(site.name, _item);
-            dispatch({type: deleteMenuItemResolved, payload: {items, clearContext: deleteMenuItem}});
-        } catch(error:unknown) {
-            if (error instanceof Error) {
-                console.log("deleteMenuItemAction()", error.message);
-                return dispatch({type: deleteMenuItemRejected, payload: {error, context: deleteMenuItem}});
-            }
-            console.error("deleteMenuItemAction()", error);
-        }
-    }
-
-const selectedReducer = (state: EditableMenuItem = defaultMenuItem, action: MenuAction): EditableMenuItem => {
-    const {type, payload} = action;
-    switch (type) {
-    case menuItemSelected:
-        if (payload?.item) {
-            return {...payload.item};
-        }
-        return {...defaultMenuItem};
-    case loadMenuResolved:
-        if (payload?.menu && payload.menu?.items) {
-            const [item] = payload.menu?.items?.filter(item => item.id === state.id);
-            if (item) {
-                return {...item};
-            }
-            return {...defaultMenuItem, parentId: payload.menu.id};
-        }
-        return {...defaultMenuItem, parentId: payload?.menu?.id || 0};
-    case loadMenuItemResolved:
-    case saveMenuItemResolved:
-        if (payload?.item) {
-            return {...payload.item};
-        }
-        return {...defaultMenuItem}
-    case menuItemUpdated:
-        if (payload?.props) {
-            return {
-                ...state,
-                ...payload.props,
-                changed: true,
-            }
-        }
-        return state;
-    default:
-        return state;
-    }
+export interface MenuItemState {
+    current: (MenuItem & Editable) | null;
+    actionStatus: 'idle' | 'loading' | 'saving' | 'deleting';
 }
 
-const loadingReducer = (state: boolean = false, action: MenuAction): boolean => {
-    switch (action.type) {
-    case loadMenuItemPending:
-        return true;
-    case loadMenuItemResolved:
-    case loadMenuItemRejected:
-        return false;
-    default:
-        return state;
-    }
+const initialState: MenuItemState = {
+    current: null,
+    actionStatus: 'idle',
 }
 
-const savingReducer = (state: boolean = false, action: MenuAction): boolean => {
-    switch (action.type) {
-    case saveMenuItemPending:
-        return true;
-    case saveMenuItemResolved:
-    case saveMenuItemRejected:
-        return false;
-    default:
-        return state;
-    }
+export const defaultMenuItem:MenuItem = {
+    id: 0,
+    title: '',
+    description: '',
+    menuId: 0,
+    status: 1,
+    parentId: 0,
+    className: '',
+    url: '',
+    priority: 0,
 }
 
-export default combineReducers({
-    selected: selectedReducer,
-    loading: loadingReducer,
-    saving: savingReducer,
+
+const menuItemReducer = createReducer(initialState, (builder) => {
+    builder
+        .addCase(setCurrentMenuItem, (state, action) => {
+            state.current = action.payload;
+        })
+        .addCase(updateMenuItem, (state, action) => {
+            if (state.current) {
+                state.current = {...state.current, ...action.payload, changed: true};
+            }
+        })
+        .addCase(loadMenuItem.pending, (state, action) => {
+            state.actionStatus = 'loading'
+            if (state.current && state.current.id !== action.meta.arg.id) {
+                state.current = null;
+            }
+        })
+        .addCase(loadMenuItem.fulfilled, (state, action) => {
+            state.actionStatus = 'idle';
+            state.current = action.payload;
+        })
+        .addCase(loadMenuItem.rejected, (state) => {
+            state.actionStatus = 'idle';
+        })
+        .addCase(loadMenu.pending, (state, action) => {
+            if (state.current && action.meta.arg !== state.current.parentId) {
+                state.current = null;
+            }
+        })
+        .addCase(loadMenu.fulfilled, (state, action) => {
+            if (action.payload) {
+                if (!state.current || state.current.parentId !== action.payload.id) {
+                    state.current = {...defaultMenuItem, parentId: action.payload?.id}
+                } else {
+                    const [item] = action.payload?.items?.filter(item => item.id === state.current?.id) ?? [];
+                    state.current = item ?? {...defaultMenuItem, parentId: action.payload.id};
+                }
+            } else {
+                state.current = null;
+            }
+
+        })
+        .addCase(saveMenuItem.pending, (state) => {
+            state.actionStatus = 'saving';
+        })
+        .addCase(saveMenuItem.fulfilled, (state, action) => {
+            state.actionStatus = 'idle';
+            state.current = action.payload;
+        })
+        .addCase(saveMenuItem.rejected, (state, action) => {
+            state.actionStatus = 'idle';
+        })
+        .addCase(removeMenuItem.pending, (state) => {
+            state.actionStatus = 'deleting';
+        })
+        .addCase(removeMenuItem.fulfilled, (state) => {
+            state.actionStatus = 'idle';
+            state.current = null;
+        })
+        .addCase(removeMenuItem.rejected, (state) => {
+            state.actionStatus = 'idle';
+        })
+        .addCase(saveMenu.fulfilled, (state, action) => {
+            if (action.payload) {
+                if (!state.current || state.current.parentId !== action.payload.id) {
+                    state.current = {...defaultMenuItem, parentId: action.payload?.id}
+                }
+            } else {
+                state.current = null;
+            }
+        })
+        .addCase(setNewMenu, (state) => {
+            state.current = null;
+        })
 });
+
+export default menuItemReducer;
