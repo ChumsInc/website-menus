@@ -28,12 +28,13 @@ export const loadMenuItem = createAsyncThunk<MenuItem | null, MenuItemArg>(
 export const saveMenuItem = createAsyncThunk<MenuItem | null, MenuItem>(
     'menuItem/save',
     async (arg, {getState}) => {
+        let priority = arg.priority;
         if (!arg.id) {
             const state = getState() as RootState;
             const items = selectItemList(state);
-            arg.priority = items.length;
+            priority = items.length;
         }
-        return await postMenuItemAPI(arg);
+        return await postMenuItemAPI({...arg, priority});
     },
     {
         condition: (arg, {getState}) => {

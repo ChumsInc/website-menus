@@ -81,9 +81,9 @@ const menuItemReducer = createReducer(initialState, (builder) => {
         .addCase(removeMenuItem.pending, (state) => {
             state.actionStatus = 'deleting';
         })
-        .addCase(removeMenuItem.fulfilled, (state) => {
+        .addCase(removeMenuItem.fulfilled, (state, action) => {
             state.actionStatus = 'idle';
-            state.current = null;
+            state.current = {...defaultMenuItem, parentId: action.meta.arg.parentId};
         })
         .addCase(removeMenuItem.rejected, (state) => {
             state.actionStatus = 'idle';
