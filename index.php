@@ -19,6 +19,6 @@ $ui = new WebUI2([
     "title" => 'Website Menus',
     'requiredRoles' => [Groups::WEB_ADMIN, Groups::ADMIN]
 ]);
-$ui->addCSS('public/css/style.css')
+$ui->addCSS('public/css/styles.css')
     ->addManifestJSON('public/js/manifest.json')
     ->render();
