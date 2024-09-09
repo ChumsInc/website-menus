@@ -82,11 +82,10 @@ const ItemCard = ({item, index, moveItem}: ItemCardProps) => {
         'text-warning': item.menu && !item.menu?.status,
         'text-primary': !!item.url && !item.menuId,
         'text-success': !item.url && !!item.menuId,
-        'text-dark': !!item.url && !!item.menuId,
     };
     const btnClassName = {
-        'btn-light': selected?.id === item.id,
-        'btn-dark': selected?.id !== item.id
+        'btn-info': selected?.id === item.id,
+        'btn-outline-info': selected?.id !== item.id
     };
 
     const clickHandler = () => {
@@ -106,7 +105,7 @@ const ItemCard = ({item, index, moveItem}: ItemCardProps) => {
                 <span className={classNames("me-3", {'bi-toggle2-off': !item.status, 'bi-toggle2-on': !!item.status})}/>
                 {item.title}
             </div>
-            {!!item.menu && <button type="button" className="btn btn-sm btn-outline-dark"
+            {!!item.menu && <button type="button" className="btn btn-sm btn-outline-secondary"
                                     onClick={() => selectMenuHandler(item.menu?.id)}>{item.menu.title}<span
                 className="ms-1 bi-arrow-up-circle"/></button>}
             <button type="button" onClick={clickHandler} className={classNames("btn btn-sm", btnClassName)}>

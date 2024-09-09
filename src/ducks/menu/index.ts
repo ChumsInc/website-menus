@@ -58,7 +58,7 @@ const menuReducer = createReducer(initialState, (builder) => {
         })
         .addCase(removeMenu.fulfilled, (state) => {
             state.actionStatus = 'idle';
-            state.current = null ?? {...defaultMenu};
+            state.current = {...defaultMenu};
         })
         .addCase(removeMenu.rejected, (state) => {
             state.actionStatus = 'idle';

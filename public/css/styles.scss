@@ -76,13 +76,17 @@ $item-link-color: bisque;
       //padding: 0.5rem;
       margin: 0.1rem 0;
       text-align: center;
-      color: black;
+      color: var(--bs-body-color);
       font-size: small;
       width: 100%;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
+      @media (prefers-color-scheme: dark) {
+        border-color: var(--bs-border-color);
+
+      }
 
       > .item-title {
         padding-left: 1rem;

@@ -8,21 +8,17 @@
  * @copyright Copyright &copy; 2013, steve
  */
 
-require_once ("autoload.inc.php");
-require_once ('access.inc.php');
+use chums\ui\WebUI2;
+use chums\user\Groups;
 
-$bodyPath = "apps/website-menus";
-$title = "Website Menus";
-$description = "";
+require_once("autoload.inc.php");
 
-$ui = new WebUI($bodyPath, $title, $description, true, 5);
-$ui->version = "2019-03-08";
-$ui->bodyClassName = 'container-fluid';
-$ui->AddCSS("public/css/styles.css");
-$ui->addManifest('public/js/manifest.json');
-/**
- * Changelog:
- */
-
-
-$ui->Send();
+$ui = new WebUI2([
+    'contentFile' => 'body.inc.php',
+    "bodyClassName" => 'container-fluid',
+    "title" => 'Website Menus',
+    'requiredRoles' => [Groups::WEB_ADMIN, Groups::ADMIN]
+]);
+$ui->addCSS('public/css/style.css')
+    ->addManifestJSON('public/js/manifest.json')
+    ->render();
