@@ -5,10 +5,12 @@ import {DndProvider} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {MenuItem} from "b2b-types";
 import {SpinnerButton} from "chums-components";
-import {prioritySort, saveItemSort, selectCurrentSort, selectItemList, selectItemsStatus, sortOrderKey} from "./index";
 import ItemCard from "./ItemCard";
 import {useAppDispatch} from "../../app/hooks";
 import {selectCurrentMenuItemStatus} from "../item/selectors";
+import {selectCurrentSort, selectItemList, selectItemsStatus} from "./selectors";
+import {prioritySort, sortOrderKey} from "./utils";
+import {saveItemSort} from "./actions";
 
 
 const MenuItemList: React.FC = () => {

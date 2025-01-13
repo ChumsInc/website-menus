@@ -1,10 +1,9 @@
 import {MenuItem} from "b2b-types";
-import {RootState} from "../../app/configureStore";
-import {postItemSort} from "../../api/menu";
-import {selectCurrentMenu} from "../menu/selectors";
-import {createAsyncThunk, createReducer} from "@reduxjs/toolkit";
+import {createReducer} from "@reduxjs/toolkit";
 import {loadMenu, setNewMenu} from "../menu/actions";
 import {loadMenuItem, removeMenuItem, saveMenuItem} from "../item/actions";
+import {saveItemSort} from "./actions";
+import {prioritySort, sortOrderKey} from "./utils";
 
 export interface ItemsState {
     list: MenuItem[];
@@ -18,30 +17,6 @@ export const initialState: ItemsState = {
     currentSort: '',
 }
 
-export const prioritySort = (a: MenuItem, b: MenuItem) => a.priority - b.priority;
-
-export const sortOrderKey = (list: MenuItem[]):string => [...list].sort(prioritySort).map(i => i.id).join(':');
-
-export const selectItemList = (state: RootState) => state.items.list;
-export const selectItemsStatus = (state: RootState) => state.items.status;
-export const selectCurrentSort = (state: RootState) => state.items.currentSort;
-
-export const saveItemSort = createAsyncThunk<MenuItem[], MenuItem[]>(
-    'items/saveSort',
-    async (arg, {getState}) => {
-        const state = getState() as RootState;
-        const currentMenu = selectCurrentMenu(state);
-        return await postItemSort(currentMenu!.id, arg.map(item => item.id))
-    },
-    {
-        condition: (arg, {getState}) => {
-            const state = getState() as RootState;
-            const status = selectItemsStatus(state);
-            const currentMenu = selectCurrentMenu(state);
-            return !!currentMenu?.id && arg.length > 0 && status === 'idle';
-        }
-    }
-)
 
 const itemsReducer = createReducer(initialState, (builder) => {
     builder
