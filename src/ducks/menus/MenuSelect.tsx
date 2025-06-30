@@ -1,7 +1,7 @@
 import React, {SelectHTMLAttributes} from 'react';
-import {selectMenuList} from "./selectors";
+import {selectMenuList} from "./index";
 import {menuSorter} from "./utils";
-import {useAppSelector} from "../../app/hooks";
+import {useAppSelector} from "@/app/hooks";
 
 
 export interface MenuSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {

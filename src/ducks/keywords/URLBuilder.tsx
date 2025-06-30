@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {keywordTitleSorter, selectKeywordsList} from "./index";
-import {FormColumn} from "chums-components";
+import FormColumn from "@/components/FormColumn";
 import {Keyword} from "b2b-types";
 import InactiveKeywordAlert from "./InactiveKeywordAlert";
 
@@ -72,7 +72,7 @@ const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
     return (
         <div className="mt-3">
             <h3>Build URL</h3>
-            <FormColumn label="Category">
+            <FormColumn label="Category" width={4}>
                 <select className="form-select form-select-sm" value={category?.keyword || ''}
                         onChange={categoryChangeHandler}>
                     <option value=""></option>
@@ -83,7 +83,7 @@ const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
                 </select>
                 <InactiveKeywordAlert keyword={category}/>
             </FormColumn>
-            <FormColumn label="Product">
+            <FormColumn label="Product" width={4}>
                 <select className="form-select form-select-sm" value={product?.keyword || ''}
                         onChange={productChangeHandler}>
                     <option value=""></option>
@@ -94,7 +94,7 @@ const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
                 </select>
                 <InactiveKeywordAlert keyword={product}/>
             </FormColumn>
-            <FormColumn label="Page">
+            <FormColumn label="Page" width={4}>
                 <select className="form-select form-select-sm" value={page?.keyword || ''} onChange={pageChangeHandler}>
                     <option value=""></option>
                     {keywords.filter(kw => kw.pagetype === 'page')
@@ -104,7 +104,7 @@ const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
                 </select>
                 <InactiveKeywordAlert keyword={page}/>
             </FormColumn>
-            <FormColumn label="URL">
+            <FormColumn label="URL" width={4}>
                 <div className="input-group input-group-sm">
                     <input type="text" value={genURL} readOnly className="form-control form-control-sm"/>
                     <button type="button" className="btn btn-sm btn-outline-secondary"

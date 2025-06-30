@@ -1,11 +1,11 @@
 import {createAction, createAsyncThunk} from "@reduxjs/toolkit";
 import {MenuItem} from "b2b-types";
-import {deleteMenuItemAPI, fetchMenuItem, postMenuItemAPI} from "../../api/menu";
-import {RootState} from "../../app/configureStore";
-import {selectCurrentMenuStatus} from "../menu/selectors";
-import {selectCurrentMenuItemStatus} from "./selectors";
+import {deleteMenuItemAPI, fetchMenuItem, postMenuItemAPI} from "@/api/menu";
+import {RootState} from "@/app/configureStore";
+import {selectCurrentMenuStatus} from "@/ducks/menu";
+import {selectCurrentMenuItemStatus} from "./index";
 import {MenuItemArg} from "../../types";
-import {selectItemList} from "../items";
+import {selectSortedItems} from "../items";
 
 export const updateMenuItem = createAction<Partial<MenuItem>>('menuItem/update');
 export const setCurrentMenuItem = createAction<MenuItem>('menuItem/setCurrent');
@@ -31,7 +31,7 @@ export const saveMenuItem = createAsyncThunk<MenuItem | null, MenuItem>(
         let priority = arg.priority;
         if (!arg.id) {
             const state = getState() as RootState;
-            const items = selectItemList(state);
+            const items = selectSortedItems(state);
             priority = items.length;
         }
         return await postMenuItemAPI({...arg, priority});

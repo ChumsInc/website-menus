@@ -1,13 +1,13 @@
 import React, {useEffect} from 'react';
-import AlertList from "../ducks/alerts/AlertList";
-import MenuList from "../ducks/menus/MenuList";
-import MenuEditor from "../ducks/menu/MenuEditor";
-import MenuItemList from "../ducks/items/MenuItemList";
-import ItemEditor from "../ducks/item/ItemEditor";
-import {loadKeywords} from "../ducks/keywords";
+import {loadKeywords} from "@/ducks/keywords";
 import {useAppDispatch} from "./hooks";
+import {HashRouter, Route, Routes} from 'react-router'
+import AppContent from "@/app/AppContent";
+import Alert from "react-bootstrap/Alert";
+import EditMenuContent from "@/app/EditMenuContent";
+import EditItemContent from "@/components/item/EditItemContent";
 
-const App: React.FC = () => {
+export default function App() {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -15,24 +15,16 @@ const App: React.FC = () => {
     }, [])
 
     return (
-        <div>
-            <AlertList/>
-            <div className="row">
-                <div className="col-4">
-                    <MenuList/>
-                </div>
-                <div className="col-4">
-                    <h2>Edit Menu</h2>
-                    <MenuEditor/>
-                    <MenuItemList/>
-                </div>
-                <div className="col-4">
-                    <h2>Edit Item</h2>
-                    <ItemEditor/>
-                </div>
-            </div>
-        </div>
+        <HashRouter>
+            <Routes>
+                <Route path="/" element={<AppContent/>}>
+                    <Route index element={<Alert variant="info">Select a Menu</Alert>}/>
+                    <Route path=":menuId" element={<EditMenuContent/>}>
+                        <Route index element={<Alert variant="info">Select an Item</Alert>}/>
+                        <Route path=":itemId" element={<EditItemContent/>}/>
+                    </Route>
+                </Route>
+            </Routes>
+        </HashRouter>
     )
 }
-
-export default React.memo(App);

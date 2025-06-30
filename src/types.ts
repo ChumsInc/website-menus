@@ -8,4 +8,7 @@ export interface NothingHereYet {
     status: 1|0,
 }
 
-export type MenuItemArg = Pick<MenuItem, 'parentId'|'id'>
+export interface MenuItemArg {
+    parentId: number|string;
+    id: number|string;
+}

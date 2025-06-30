@@ -1,22 +1,22 @@
 import React from 'react';
-import {Alert} from "chums-components";
-import {useAppSelector} from "../../app/hooks";
-import {selectMenuByID} from "./selectors";
+import Alert from "react-bootstrap/Alert";
+import {useAppSelector} from "@/app/hooks";
+import {selectMenuById} from "@/ducks/menus/index";
 
 export interface MenuInactiveAlertProps {
     menuId?: number,
 }
 
-const MenuInactiveAlert: React.FC<MenuInactiveAlertProps> = ({menuId}: MenuInactiveAlertProps) => {
-    const menu = useAppSelector((state) => selectMenuByID(state, menuId));
+const MenuInactiveAlert = ({menuId}: MenuInactiveAlertProps) => {
+    const menu = useAppSelector((state) => selectMenuById(state, menuId ?? 0));
     if (!menuId) {
         return null;
     }
     if (!menu) {
-        return (<Alert color="danger">Menu ID '{menuId}' not found</Alert>);
+        return (<Alert variant="danger">Menu ID '{menuId}' not found</Alert>);
     }
     if (!menu.status) {
-        return (<Alert color="warning">Menu '{menu.title}' is inactive</Alert>);
+        return (<Alert variant="warning">Menu '{menu.title}' is inactive</Alert>);
     }
     return null;
 }

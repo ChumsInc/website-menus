@@ -1,12 +1,12 @@
 import {Menu, MenuItem} from "b2b-types";
-import {fetchJSON} from "chums-components";
+import {fetchJSON} from "@chumsinc/ui-utils";
 import {MenuItemArg} from "../types";
 
 export const fetchMenuList =  async ():Promise<Menu[]> => {
     try {
-        const url = `/api/b2b/menus`;
+        const url = `/api/b2b/menus/list.json`;
         const res = await fetchJSON<{menus:Menu[]}>(url);
-        return res.menus ?? [];
+        return res?.menus ?? [];
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("fetchMenuList()", err.message)
@@ -17,14 +17,14 @@ export const fetchMenuList =  async ():Promise<Menu[]> => {
     }
 }
 
-export const fetchMenu = async (id:number):Promise<Menu|null> => {
+export const fetchMenu = async (id:number|string):Promise<Menu|null> => {
     try {
-        const url = `/api/b2b/menus/${encodeURIComponent(id)}`;
-        const {menus} = await fetchJSON<{menus:Menu[]}>(url);
-        if (!menus.length) {
+        const url = `/api/b2b/menus/${encodeURIComponent(id)}.json`;
+        const res = await fetchJSON<{menus:Menu[]}>(url);
+        if (!res?.menus.length) {
             return null;
         }
-        const [menu] = menus;
+        const [menu] = res.menus;
         return menu;
     } catch(err:unknown) {
         if (err instanceof Error) {
@@ -40,7 +40,7 @@ export const postMenu = async (arg:Menu):Promise<Menu|null> => {
     try {
         const url = `/api/b2b/menus`;
         const res = await fetchJSON<{menu:Menu}>(url, {method: 'POST', body:JSON.stringify(arg)});
-        return res.menu ?? null;
+        return res?.menu ?? null;
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("saveMenu()", err.message);
@@ -68,11 +68,11 @@ export const deleteMenuAPI = async (arg:number):Promise<void> => {
 export const fetchMenuItem = async (arg: MenuItemArg):Promise<MenuItem|null> => {
     try {
         const url = `/api/b2b/menus/${encodeURIComponent(arg.parentId)}/${encodeURIComponent(arg.id)}`;
-        const {items} = await fetchJSON<{items:MenuItem[]}>(url);
-        if (!items.length) {
+        const res = await fetchJSON<{items:MenuItem[]}>(url);
+        if (!res?.items.length) {
             return null;
         }
-        const [item] = items;
+        const [item] = res.items;
         return item;
     } catch(err:unknown) {
         if (err instanceof Error) {
@@ -87,8 +87,8 @@ export const fetchMenuItem = async (arg: MenuItemArg):Promise<MenuItem|null> => 
 export const postMenuItemAPI = async (arg:MenuItem):Promise<MenuItem|null> => {
     try {
         const url = `/api/b2b/menus/item`;
-        const {item} = await fetchJSON<{item:MenuItem}>(url, {method: 'POST', body: JSON.stringify(arg)});
-        return item;
+        const res = await fetchJSON<{item:MenuItem}>(url, {method: 'POST', body: JSON.stringify(arg)});
+        return res?.item ?? null;
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("saveMenuItem()", err.message);
@@ -102,8 +102,8 @@ export const postMenuItemAPI = async (arg:MenuItem):Promise<MenuItem|null> => {
 export const deleteMenuItemAPI = async (arg:MenuItemArg):Promise<MenuItem[]> => {
     try {
         const url = `/api/b2b/menus/${encodeURIComponent(arg.parentId)}/${encodeURIComponent(arg.id)}`;
-        const {items} = await fetchJSON<{items:MenuItem[]}>(url, {method: 'DELETE'});
-        return items || [];
+        const res = await fetchJSON<{items:MenuItem[]}>(url, {method: 'DELETE'});
+        return res?.items || [];
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("deleteMenuItem()", err.message);
@@ -117,8 +117,8 @@ export const deleteMenuItemAPI = async (arg:MenuItemArg):Promise<MenuItem[]> => 
 export const postItemSort = async (parentId: number, idList:number[]):Promise<MenuItem[]> => {
     try {
         const url = `/api/b2b/menus/${encodeURIComponent(parentId)}/sort`;
-        const {items} = await fetchJSON<{items:MenuItem[]}>(url, {method: 'POST', body: JSON.stringify({items: idList})});
-        return items;
+        const res = await fetchJSON<{items:MenuItem[]}>(url, {method: 'POST', body: JSON.stringify({items: idList})});
+        return res?.items ?? [];
     } catch(err:unknown) {
         if (err instanceof Error) {
             console.warn("postItemSort()", err.message);

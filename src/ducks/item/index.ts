@@ -1,20 +1,17 @@
 import {MenuItem} from "b2b-types";
-import {Editable} from "b2b-types/src/generic";
-import {createReducer} from "@reduxjs/toolkit";
-import {loadMenuItem, removeMenuItem, saveMenuItem, setCurrentMenuItem, updateMenuItem} from "./actions";
-import {loadMenu, saveMenu, setNewMenu} from "../menu/actions";
+import {createSlice} from "@reduxjs/toolkit";
+import {loadMenuItem, removeMenuItem, saveMenuItem} from "./actions";
+import {loadMenu, saveMenu} from "../menu/actions";
+import {setCurrentMenu} from "@/ducks/menu";
+
+export type ItemStatus = 'idle' | 'loading' | 'saving' | 'deleting';
 
 export interface MenuItemState {
-    current: (MenuItem & Editable) | null;
-    actionStatus: 'idle' | 'loading' | 'saving' | 'deleting';
+    current: MenuItem | null;
+    actionStatus: ItemStatus;
 }
 
-const initialState: MenuItemState = {
-    current: null,
-    actionStatus: 'idle',
-}
-
-export const defaultMenuItem:MenuItem = {
+export const defaultMenuItem: MenuItem = {
     id: 0,
     title: '',
     description: '',
@@ -26,80 +23,90 @@ export const defaultMenuItem:MenuItem = {
     priority: 0,
 }
 
+const initialState: MenuItemState = {
+    current: null,
+    actionStatus: 'idle',
+}
 
-const menuItemReducer = createReducer(initialState, (builder) => {
-    builder
-        .addCase(setCurrentMenuItem, (state, action) => {
-            state.current = action.payload;
-        })
-        .addCase(updateMenuItem, (state, action) => {
-            if (state.current) {
-                state.current = {...state.current, ...action.payload, changed: true};
-            }
-        })
-        .addCase(loadMenuItem.pending, (state, action) => {
-            state.actionStatus = 'loading'
-            if (state.current && state.current.id !== action.meta.arg.id) {
-                state.current = null;
-            }
-        })
-        .addCase(loadMenuItem.fulfilled, (state, action) => {
-            state.actionStatus = 'idle';
-            state.current = action.payload;
-        })
-        .addCase(loadMenuItem.rejected, (state) => {
-            state.actionStatus = 'idle';
-        })
-        .addCase(loadMenu.pending, (state, action) => {
-            if (state.current && action.meta.arg !== state.current.parentId) {
-                state.current = null;
-            }
-        })
-        .addCase(loadMenu.fulfilled, (state, action) => {
-            if (action.payload) {
-                if (!state.current || state.current.parentId !== action.payload.id) {
-                    state.current = {...defaultMenuItem, parentId: action.payload?.id}
+
+const itemSlice = createSlice({
+    name: 'menuItem',
+    initialState: initialState,
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(loadMenuItem.pending, (state, action) => {
+                state.actionStatus = 'loading'
+                if (state.current && state.current.id !== +action.meta.arg.id) {
+                    state.current = null;
+                }
+            })
+            .addCase(loadMenuItem.fulfilled, (state, action) => {
+                state.actionStatus = 'idle';
+                state.current = action.payload;
+            })
+            .addCase(loadMenuItem.rejected, (state) => {
+                state.actionStatus = 'idle';
+            })
+            .addCase(loadMenu.pending, (state, action) => {
+                if (state.current && action.meta.arg !== state.current.parentId) {
+                    state.current = null;
+                }
+            })
+            .addCase(loadMenu.fulfilled, (state, action) => {
+                if (action.payload) {
+                    if (!state.current || state.current.parentId !== action.payload.id) {
+                        state.current = {...defaultMenuItem, parentId: action.payload.id}
+                    } else {
+                        const [item] = action.payload?.items?.filter(item => item.id === state.current?.id) ?? [];
+                        state.current = item ?? {...defaultMenuItem, parentId: action.payload.id};
+                    }
                 } else {
-                    const [item] = action.payload?.items?.filter(item => item.id === state.current?.id) ?? [];
-                    state.current = item ?? {...defaultMenuItem, parentId: action.payload.id};
+                    state.current = null;
                 }
-            } else {
-                state.current = null;
-            }
 
-        })
-        .addCase(saveMenuItem.pending, (state) => {
-            state.actionStatus = 'saving';
-        })
-        .addCase(saveMenuItem.fulfilled, (state, action) => {
-            state.actionStatus = 'idle';
-            state.current = action.payload;
-        })
-        .addCase(saveMenuItem.rejected, (state, action) => {
-            state.actionStatus = 'idle';
-        })
-        .addCase(removeMenuItem.pending, (state) => {
-            state.actionStatus = 'deleting';
-        })
-        .addCase(removeMenuItem.fulfilled, (state, action) => {
-            state.actionStatus = 'idle';
-            state.current = {...defaultMenuItem, parentId: action.meta.arg.parentId};
-        })
-        .addCase(removeMenuItem.rejected, (state) => {
-            state.actionStatus = 'idle';
-        })
-        .addCase(saveMenu.fulfilled, (state, action) => {
-            if (action.payload) {
-                if (!state.current || state.current.parentId !== action.payload.id) {
-                    state.current = {...defaultMenuItem, parentId: action.payload?.id}
+            })
+            .addCase(saveMenuItem.pending, (state) => {
+                state.actionStatus = 'saving';
+            })
+            .addCase(saveMenuItem.fulfilled, (state, action) => {
+                state.actionStatus = 'idle';
+                state.current = action.payload;
+            })
+            .addCase(saveMenuItem.rejected, (state) => {
+                state.actionStatus = 'idle';
+            })
+            .addCase(removeMenuItem.pending, (state) => {
+                state.actionStatus = 'deleting';
+            })
+            .addCase(removeMenuItem.fulfilled, (state, action) => {
+                state.actionStatus = 'idle';
+                state.current = {...defaultMenuItem, parentId: +action.meta.arg.parentId};
+            })
+            .addCase(removeMenuItem.rejected, (state) => {
+                state.actionStatus = 'idle';
+            })
+            .addCase(saveMenu.fulfilled, (state, action) => {
+                if (action.payload) {
+                    if (!state.current || state.current.parentId !== action.payload.id) {
+                        state.current = {...defaultMenuItem, parentId: action.payload?.id}
+                    }
+                } else {
+                    state.current = null;
                 }
-            } else {
-                state.current = null;
-            }
-        })
-        .addCase(setNewMenu, (state) => {
-            state.current = null;
-        })
-});
+            })
+            .addCase(setCurrentMenu, (state, action) => {
+                if (!action.payload) {
+                    state.current = null;
+                }
+            })
+    },
+    selectors: {
+        selectCurrentMenuItem: (state) => state.current,
+        selectCurrentMenuItemStatus: (state) => state.actionStatus,
+    }
+})
 
-export default menuItemReducer;
+export const {selectCurrentMenuItem, selectCurrentMenuItemStatus} = itemSlice.selectors;
+
+export default itemSlice;

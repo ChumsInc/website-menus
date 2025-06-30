@@ -1,6 +1,6 @@
 import React from 'react';
 import {Keyword} from "b2b-types";
-import {Alert} from "chums-components";
+import Alert from "react-bootstrap/Alert";
 
 export interface InactiveKeywordAlertProps {
     keyword?: Keyword|null,
@@ -23,7 +23,7 @@ const InactiveKeywordAlert:React.FC<InactiveKeywordAlertProps> = ({keyword}) => 
         return null;
     }
     return (
-        <Alert color="warning">{pageType(keyword)} '<strong>{keyword.title}</strong>' is inactive</Alert>
+        <Alert variant="warning">{pageType(keyword)} '<strong>{keyword.title}</strong>' is inactive</Alert>
     )
 }
 export default InactiveKeywordAlert;

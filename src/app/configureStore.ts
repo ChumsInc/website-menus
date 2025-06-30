@@ -1,19 +1,19 @@
 import {combineReducers} from "redux";
-import menusReducer from "../ducks/menus";
+import menusSlice from "../ducks/menus";
 import {configureStore} from "@reduxjs/toolkit";
-import menuReducer from "../ducks/menu";
-import menuItemReducer from "../ducks/item";
-import keywordsReducer from "../ducks/keywords";
-import itemsReducer from "../ducks/items";
-import alertsReducer from "../ducks/alerts";
+import menuSlice from "../ducks/menu";
+import itemSlice from "../ducks/item";
+import keywordsSlice from "../ducks/keywords";
+import itemsSlice from "../ducks/items";
+import {alertsSlice} from "@chumsinc/alert-list";
 
 const rootReducer = combineReducers({
-    alerts: alertsReducer,
-    items: itemsReducer,
-    keywords: keywordsReducer,
-    menu: menuReducer,
-    menus: menusReducer,
-    menuItem: menuItemReducer,
+    [alertsSlice.reducerPath]: alertsSlice.reducer,
+    [itemsSlice.reducerPath]: itemsSlice.reducer,
+    [keywordsSlice.reducerPath]: keywordsSlice.reducer,
+    [menuSlice.reducerPath]: menuSlice.reducer,
+    [menusSlice.reducerPath]: menusSlice.reducer,
+    [itemSlice.reducerPath]: itemSlice.reducer,
 })
 
 const store = configureStore({
