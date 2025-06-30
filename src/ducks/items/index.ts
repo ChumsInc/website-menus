@@ -1,11 +1,10 @@
 import {MenuItem} from "b2b-types";
 import {RootState} from "@/app/configureStore";
 import {postItemSort} from "@/api/menu";
-import {selectCurrentMenu} from "@/ducks/menu";
-import {createAsyncThunk, createEntityAdapter, createReducer, createSelector, createSlice} from "@reduxjs/toolkit";
+import {selectCurrentMenu, setCurrentMenu} from "@/ducks/menu";
+import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 import {loadMenu} from "../menu/actions";
 import {loadMenuItem, removeMenuItem, saveMenuItem} from "../item/actions";
-import {setCurrentMenu} from "@/ducks/menu";
 
 const adapter = createEntityAdapter<MenuItem, number>({
     selectId: (arg) => arg.id,
@@ -27,10 +26,10 @@ export const prioritySort = (a: MenuItem, b: MenuItem) => a.priority - b.priorit
 
 export const sortOrderKey = (list: MenuItem[]): string => [...list].sort(prioritySort).map(i => i.id).join(':');
 
-export const sortedKey = (list:MenuItem[]):string => list.map(item => item.id).join(':');
+export const sortedKey = (list: MenuItem[]): string => list.map(item => item.id).join(':');
 
 
-export const saveItemSort = createAsyncThunk<MenuItem[], number[], {state:RootState}>(
+export const saveItemSort = createAsyncThunk<MenuItem[], number[], { state: RootState }>(
     'items/saveSort',
     async (arg, {getState}) => {
         const state = getState() as RootState;
@@ -50,9 +49,7 @@ export const saveItemSort = createAsyncThunk<MenuItem[], number[], {state:RootSt
 const itemsSlice = createSlice({
     name: 'items',
     initialState: adapter.getInitialState(extraState),
-    reducers: {
-
-    },
+    reducers: {},
     extraReducers: builder => {
         builder
             .addCase(loadMenu.fulfilled, (state, action) => {

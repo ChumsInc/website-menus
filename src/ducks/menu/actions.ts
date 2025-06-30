@@ -1,11 +1,11 @@
 import {RootState} from "@/app/configureStore";
 import {selectCurrentMenu, selectCurrentMenuStatus} from "@/ducks/menu";
-import {deleteMenuAPI, fetchMenu, postMenu, postItemSort} from "@/api/menu";
+import {deleteMenuAPI, fetchMenu, postItemSort, postMenu} from "@/api/menu";
 import {Menu, MenuItem} from "b2b-types";
-import {createAction, createAsyncThunk} from "@reduxjs/toolkit";
+import {createAsyncThunk} from "@reduxjs/toolkit";
 
 
-export const loadMenu = createAsyncThunk<Menu | null, number|string>(
+export const loadMenu = createAsyncThunk<Menu | null, number | string>(
     'menu/load',
     async (arg) => {
         return await fetchMenu(arg);

@@ -1,6 +1,6 @@
 import {Keyword} from "b2b-types";
-import {RootState} from "../../app/configureStore";
-import {fetchKeywords} from "../../api/keywords";
+import {RootState} from "@/app/configureStore";
+import {fetchKeywords} from "@/api/keywords";
 import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
 
 const adapter = createEntityAdapter<Keyword, string>({
@@ -48,7 +48,7 @@ const keywordsSlice = createSlice({
                 state.loading = false;
                 adapter.setAll(state, action.payload)
             })
-            .addCase(loadKeywords.rejected, (state, action) => {
+            .addCase(loadKeywords.rejected, (state) => {
                 state.loading = false;
             })
     },

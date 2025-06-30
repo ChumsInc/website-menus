@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useEffect, useId, useState} from 'react';
 import {useSelector} from "react-redux";
 import {Menu} from "b2b-types";
-import {selectCurrentMenu, setCurrentMenu} from "@/ducks/menu";
+import {selectCurrentMenu} from "@/ducks/menu";
 import {useAppDispatch, useAppSelector} from "@/app/hooks";
 import {
     selectMenuListLoading,
@@ -15,7 +15,7 @@ import {loadMenuList} from "./actions";
 import {SortableTable, SortableTableField, TablePagination} from "@chumsinc/sortable-tables";
 import {SortProps} from "chums-types";
 import {Button, FormCheck, ProgressBar} from "react-bootstrap";
-import {generatePath, useNavigate, useSearchParams} from "react-router";
+import {generatePath, useNavigate} from "react-router";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
@@ -39,7 +39,6 @@ const MenuList = () => {
     const [page, setPage] = useState<number>(0);
     const rowsPerPage = 25;
     const idShowInactive = useId();
-    const [, setSearchParams] = useSearchParams();
 
     useEffect(() => {
         dispatch(loadMenuList());
