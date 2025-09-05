@@ -1,25 +1,24 @@
 import {Keyword} from "b2b-types";
-import {RootState} from "@/app/configureStore";
-import {fetchKeywords} from "@/api/keywords";
-import {createAsyncThunk, createEntityAdapter, createSelector, createSlice} from "@reduxjs/toolkit";
-
-const adapter = createEntityAdapter<Keyword, string>({
-    selectId: (arg) => arg.keyword,
-    sortComparer: (a, b) => a.keyword.localeCompare(b.keyword),
-})
-const selectors = adapter.getSelectors();
+import {RootState} from "../../app/configureStore";
+import {fetchKeywords} from "../../api/keywords";
+import {createAsyncThunk, createReducer} from "@reduxjs/toolkit";
 
 export interface KeywordsState {
+    list: Keyword[];
     loading: boolean;
 }
 
-const extraState: KeywordsState = {
+export const initialState: KeywordsState = {
+    list: [],
     loading: false,
 }
 
 export const keywordTitleSorter = (a: Keyword, b: Keyword) => a.title.toLowerCase() === b.title.toLowerCase()
     ? (a.keyword > b.keyword ? 1 : -1)
     : (a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1);
+
+export const selectKeywordsList = (state: RootState) => state.keywords.list;
+export const selectKeywordsLoading = (state: RootState) => state.keywords.loading;
 
 
 export const loadKeywords = createAsyncThunk<Keyword[], void>(
@@ -35,35 +34,18 @@ export const loadKeywords = createAsyncThunk<Keyword[], void>(
     }
 )
 
-const keywordsSlice = createSlice({
-    name: 'keywords',
-    initialState: adapter.getInitialState(extraState),
-    reducers: {},
-    extraReducers: builder => {
-        builder
-            .addCase(loadKeywords.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(loadKeywords.fulfilled, (state, action) => {
-                state.loading = false;
-                adapter.setAll(state, action.payload)
-            })
-            .addCase(loadKeywords.rejected, (state) => {
-                state.loading = false;
-            })
-    },
-    selectors: {
-        selectAllKeywords: (state) => selectors.selectAll(state),
-        selectKeywordsLoading: (state) => state.loading,
-    }
-})
-export const {selectAllKeywords, selectKeywordsLoading} = keywordsSlice.selectors;
+const keywordsReducer = createReducer(initialState, (builder) => {
+    builder
+        .addCase(loadKeywords.pending, (state) => {
+            state.loading = true;
+        })
+        .addCase(loadKeywords.fulfilled, (state, action) => {
+            state.loading = false;
+            state.list = [...action.payload].sort(keywordTitleSorter);
+        })
+        .addCase(loadKeywords.rejected, (state) => {
+            state.loading = false;
+        })
+});
 
-export const selectKeywordsList = createSelector(
-    [selectAllKeywords],
-    (list) => {
-        return [...list].sort(keywordTitleSorter)
-    }
-)
-
-export default keywordsSlice;
+export default keywordsReducer

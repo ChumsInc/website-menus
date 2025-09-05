@@ -2,7 +2,7 @@
   width: calc(20% - 0.5rem);
   min-height: 150px;
   flex: 0 0 auto;
-  border: 1px solid lighten(black, 10%);
+  border: 1px solid var(--bs-border-color);
   border-radius: 3px;
   margin: 0.25rem;
   text-align: center;
@@ -10,7 +10,7 @@
   font-size: small;
 
   .btn-light {
-    border-color: grey;
+    border-color: var(--bs-btn-border-color);
   }
   &.inactive {
     color: black;

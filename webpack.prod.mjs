@@ -2,6 +2,8 @@ import {merge} from 'webpack-merge';
 import common from './webpack.common.mjs';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
+import {CleanWebpackPlugin} from 'clean-webpack-plugin';
+import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 
 
 export default merge(common, {
@@ -24,10 +26,11 @@ export default merge(common, {
         ],
     },
     output: {
-        clean: true,
         filename: "[name].[contenthash:8].js",
     },
     plugins: [
-        new WebpackManifestPlugin({}),
-    ]
+        new CleanWebpackPlugin(),
+        new WebpackManifestPlugin(),
+        new BundleAnalyzerPlugin(),
+]
 });

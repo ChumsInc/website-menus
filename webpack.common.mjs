@@ -1,5 +1,5 @@
 import path from 'node:path';
-import process from "node:process";
+import process from 'node:process'
 
 export default {
     entry: './src/index.tsx',
@@ -7,7 +7,7 @@ export default {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
+                use: ['ts-loader'],
                 exclude: /node_modules/,
             },
             {
@@ -28,48 +28,28 @@ export default {
         ]
     },
     resolve: {
-        alias: {
-            "@/": path.resolve(process.cwd(), 'src'),
-            "@/api": path.resolve(process.cwd(), 'src/api'),
-            "@/app": path.resolve(process.cwd(), 'src/app'),
-            "@/components": path.resolve(process.cwd(), 'src/components'),
-            "@/ducks": path.resolve(process.cwd(), 'src/ducks'),
-            "@/hooks": path.resolve(process.cwd(), 'src/hooks'),
-            "@/slices": path.resolve(process.cwd(), 'src/slices'),
-            "@/types": path.resolve(process.cwd(), 'src/types'),
-            "@/utils": path.resolve(process.cwd(), 'src/utils'),
-        },
         extensions: ['.tsx', '.ts', '.js'],
+        fallback: {
+            // fix for:
+            // ERROR in ./node_modules/react-dnd/dist/core/DndProvider.js 28:0-48
+            // Module not found: Error: Can't resolve 'react/jsx-runtime' in 'C:\Users\steve\PhpstormProjects\website-categories\node_modules\react-dnd\dist\core'
+            'react/jsx-runtime': 'react/jsx-runtime.js',
+            'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
+        },
     },
-    plugins: [
-    ],
     optimization: {
         splitChunks: {
-            chunks: 'async',
-            minSize: 20000,
-            minRemainingSize: 0,
-            minChunks: 1,
-            maxAsyncRequests: 30,
-            maxInitialRequests: 30,
-            enforceSizeThreshold: 50000,
             cacheGroups: {
-                react: {
-                    test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-                    name: 'vendors-react',
-                    chunks: 'all',
-                    priority: 10,
-                },
                 defaultVendors: {
                     test: /[\\/]node_modules[\\/]/,
                     name: 'vendors',
                     chunks: 'all',
-                    priority: 0,
                 },
-                default: {
-                    minChunks: 2,
-                    priority: -10,
-                    reuseExistingChunk: true,
-                }
+                chums: {
+                    test: /[\\/]common-components[\\/]/,
+                    name: 'chums',
+                    chunks: 'all',
+                },
             }
         }
     },
