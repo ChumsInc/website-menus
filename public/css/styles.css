@@ -54,7 +54,7 @@
 }
 #app .sortable-item-list .sortable-item {
   flex: 0 0 auto;
-  border: 1px solid #1a1a1a;
+  border: 1px solid rgb(25.5, 25.5, 25.5);
   border-radius: 3px;
   margin: 0.1rem 0;
   text-align: center;
@@ -90,7 +90,7 @@
 }
 #app .sortable-item-list .sortable-item.inactive {
   color: black;
-  background-color: #bfbfbf;
+  background-color: rgb(191.25, 191.25, 191.25);
 }
 #app .sortable-item-list .sortable-item.inactive a {
   color: black;

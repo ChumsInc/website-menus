@@ -14,16 +14,16 @@
 }
 .sortable-item.inactive {
   color: black;
-  background-color: gray;
+  background-color: rgb(127.5, 127.5, 127.5);
 }
 .sortable-item.inactive button {
-  background-color: #555555;
+  background-color: rgb(84.99915, 84.99915, 84.99915);
 }
 .sortable-item.inactive img {
   filter: grayscale(50%) brightness(80%);
 }
 .sortable-item.inactive a {
-  color: gray;
+  color: rgb(127.5, 127.5, 127.5);
 }
 .sortable-item--edit-button {
   width: 100%;
