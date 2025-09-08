@@ -1,6 +1,6 @@
 {
   "name": "website-menus",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0",
   "main": "src/index.tsx",
   "type": "module",
   "scripts": {
