@@ -1,5 +1,5 @@
-import {Menu} from "b2b-types";
-import {SortProps} from "chums-types";
+import type {Menu} from "b2b-types";
+import type {SortProps} from "chums-types";
 
 export const menuSorter = ({field, ascending}: SortProps<Menu>) => (a: Menu, b: Menu) => {
     const ascMod = ascending ? 1 : -1;

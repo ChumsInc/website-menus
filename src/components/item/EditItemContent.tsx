@@ -1,8 +1,8 @@
-import React, {useEffect} from 'react';
+import {useEffect} from 'react';
 import {useParams} from "react-router";
-import ItemEditor from "@/ducks/item/ItemEditor";
+import ItemEditor from "@/components/item/ItemEditor.tsx";
 import {loadMenuItem} from "@/ducks/item/actions";
-import {useAppDispatch} from "@/app/hooks";
+import {useAppDispatch} from "@/app/configureStore";
 
 export default function EditItemContent() {
     const dispatch = useAppDispatch();
@@ -13,7 +13,7 @@ export default function EditItemContent() {
             return;
         }
         dispatch(loadMenuItem({parentId: params.menuId, id: params.itemId}))
-    }, [params]);
+    }, [params, dispatch]);
 
     return (
         <ItemEditor/>

@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
-import {closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent} from "@dnd-kit/core";
+import {closestCenter, DndContext, type DragEndEvent, DragOverlay, type DragStartEvent} from "@dnd-kit/core";
 import {arrayMove, SortableContext} from "@dnd-kit/sortable";
-import {MenuItem} from "b2b-types";
-import {useAppSelector} from "@/app/hooks";
+import type {MenuItem} from "b2b-types";
+import {useAppSelector} from "@/app/configureStore";
 import {selectCurrentMenuItem} from "@/ducks/item";
 import {SortableMenuItem, ThumbedMenuItem} from "@/components/items/SortableMenuItem";
 
@@ -22,7 +22,7 @@ export default function SortableMenuItems({list, onSortChange}: SortableMenuItem
 
     useEffect(() => {
         onSortChange(items);
-    }, [items]);
+    }, [items, onSortChange]);
 
 
     const handleDragStart = (ev: DragStartEvent) => {
@@ -49,8 +49,10 @@ export default function SortableMenuItems({list, onSortChange}: SortableMenuItem
     return (
         <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} collisionDetection={closestCenter}>
             <SortableContext items={items}>
-                {items.map(item => <SortableMenuItem key={item.id} menuItem={item}
-                                                     active={item.id === currentItem?.id}/>)}
+                {items.map(item => (
+                    <SortableMenuItem key={item.id} menuItem={item}
+                                      active={item.id === currentItem?.id}/>
+                ))}
             </SortableContext>
             <DragOverlay>
                 {draggingItem &&

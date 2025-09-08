@@ -1,9 +1,9 @@
-import {Menu, MenuItem} from "b2b-types";
+import type {Menu, MenuItem} from "b2b-types";
 
 export const defaultMenu:Menu = {
     id: 0,
     title: '',
-    status: 1,
+    status: true,
     description: '',
     parents: [],
     items: [],
@@ -15,7 +15,7 @@ export const defaultMenuItem:MenuItem = {
     title: '',
     description: '',
     menuId: 0,
-    status: 1,
+    status: true,
     parentId: 0,
     className: '',
     url: '',

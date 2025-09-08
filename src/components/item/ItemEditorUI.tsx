@@ -1,11 +1,11 @@
-import React, {ChangeEvent, FormEvent} from 'react';
-import {MenuItem} from "b2b-types";
-import {useAppSelector} from "@/app/hooks";
+import {type ChangeEvent, type FormEvent} from 'react';
+import type {MenuItem} from "b2b-types";
+import {useAppSelector} from "@/app/configureStore.ts";
 import {selectItemsStatus} from "@/ducks/items";
-import FormColumn from "@/components/FormColumn";
-import StatusButtonGroup from "@/components/StatusButtonGroup";
-import MenuSelect from "@/ducks/menus/MenuSelect";
-import MenuInactiveAlert from "@/ducks/menus/MenuInactiveAlert";
+import FormColumn from "@/components/common/FormColumn.tsx";
+import StatusButtonGroup from "@/components/common/StatusButtonGroup.tsx";
+import MenuSelect from "@/components/menus/MenuSelect.tsx";
+import MenuInactiveAlert from "@/components/menus/MenuInactiveAlert.tsx";
 import {Button} from "react-bootstrap";
 
 export interface ItemEditorUIProps {
@@ -28,7 +28,7 @@ export default function ItemEditorUI({
     const actionStatus = useAppSelector(selectItemsStatus);
 
     const statusChangeHandler = (checked: boolean) => {
-        onChangeItem({...item, status: checked ? 1 : 0});
+        onChangeItem({...item, status: checked});
     }
 
     const changeHandler = (field: keyof MenuItem) => (ev: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

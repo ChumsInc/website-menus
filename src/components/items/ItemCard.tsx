@@ -1,13 +1,13 @@
-import React, {useRef} from 'react';
-import {DropTargetMonitor, useDrag, useDrop} from 'react-dnd';
-import {XYCoord} from "dnd-core";
+import {useRef} from 'react';
+import {type DropTargetMonitor, useDrag, useDrop} from 'react-dnd';
+import {type XYCoord} from "dnd-core";
 import classNames from "classnames";
 import {useSelector} from "react-redux";
-import {MenuItem} from "b2b-types";
-import {selectCurrentMenuItem} from "../item/selectors";
-import {loadMenu} from "../menu/actions";
-import {loadMenuItem} from "../item/actions";
-import {useAppDispatch} from "../../app/hooks";
+import type {MenuItem} from "b2b-types";
+import {selectCurrentMenuItem} from "@/ducks/item";
+import {loadMenu} from "@/ducks/menu/actions.ts";
+import {loadMenuItem} from "@/ducks/item/actions.ts";
+import {useAppDispatch} from "@/app/configureStore.ts";
 
 
 interface ItemCardProps {
@@ -31,7 +31,7 @@ const ItemCard = ({item, index, moveItem}: ItemCardProps) => {
     const ref = useRef<HTMLDivElement>(null);
     const selected = useSelector(selectCurrentMenuItem);
 
-    const [collectedProps, drop] = useDrop({
+    const [, drop] = useDrop({
         accept: 'item',
         collect(monitor) {
             return {

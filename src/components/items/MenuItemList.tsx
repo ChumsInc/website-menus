@@ -1,13 +1,15 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useSelector} from "react-redux";
-import {MenuItem} from "b2b-types";
-import {saveItemSort, selectCurrentSort, selectItemsStatus, selectSortedItems, sortedKey} from "@/ducks/items";
-import {useAppDispatch} from "@/app/hooks";
+import type {MenuItem} from "b2b-types";
+import {selectCurrentSort, selectItemsStatus, selectSortedItems} from "@/ducks/items";
 import {selectCurrentMenuItemStatus} from "@/ducks/item";
+import {useAppDispatch} from "@/app/configureStore";
 import {Button, ProgressBar} from "react-bootstrap";
 import SortableMenuItems from "@/components/items/SortableMenuItems";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {sortOrderKey} from "@/ducks/items/utils.ts";
+import {saveItemSort} from "@/ducks/items/actions.ts";
 
 
 export default function MenuItemList() {
@@ -21,19 +23,18 @@ export default function MenuItemList() {
 
     const onSortChange = useCallback((items: MenuItem[]) => {
         setItems(items);
-        setSorted(sortedKey(items))
-    }, [list])
+        setSorted(sortOrderKey(items))
+    }, [])
 
     useEffect(() => {
         setItems(list);
-        setSorted(sortedKey(list))
+        setSorted(sortOrderKey(list))
     }, [list]);
 
 
-    const onSave = () => useCallback(() => {
-        const idList = list.map(item => item.id);
-        dispatch(saveItemSort(idList));
-    }, [items]);
+    const onSave = () => {
+        dispatch(saveItemSort(items));
+    }
 
     const sortChanged = currentSort !== sorted;
 
@@ -43,7 +44,7 @@ export default function MenuItemList() {
                 <Col xs="auto">
                     <h3>Items</h3>
                 </Col>
-                <Col />
+                <Col/>
                 <Col xs="auto">
                     <Button type="button" size="sm" variant={sortChanged ? 'warning' : "primary"}
                             onClick={onSave}

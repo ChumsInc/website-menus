@@ -10,3 +10,5 @@ export interface MenuItemArg {
     parentId: number | string;
     id: number | string;
 }
+
+export type MenuActionStatus = 'idle' | 'saving' | 'saving-sort' | 'deleting' | 'loading';

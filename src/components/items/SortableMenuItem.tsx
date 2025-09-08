@@ -1,18 +1,37 @@
-import {MenuItem} from "b2b-types";
+import type {MenuItem} from "b2b-types";
 import {useSortable} from "@dnd-kit/sortable";
 import {CSS} from "@dnd-kit/utilities";
 import {MenuItemRender} from "@/components/items/MenuItemRender";
-import React from "react";
 import {Button} from "react-bootstrap";
 import styled from "@emotion/styled";
-import {SyntheticListenerMap} from "@dnd-kit/core/dist/hooks/utilities";
+import type {SyntheticListenerMap} from "@dnd-kit/core/dist/hooks/utilities";
+import classNames from "classnames";
 
 const SortableMenuItemContainer = styled.div`
     display: flex;
     flex-direction: row;
     width: 100%;
     gap: 1rem;
-    padding: 0.1rem 0
+    padding: 0 0;
+    margin: 0.25rem 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    background-color: var(--bs-body-bg);
+    &.active {
+        border-color: var(--bs-primary);
+    }
+    &:hover {
+        border-color: var(--bs-primary);
+    }
+    &:focus-within {}
+    & > .btn.drag-thumb {
+        border-left: none;
+        border-top: none;
+        border-bottom: none;
+        border-radius: 0;
+        border-right: 1px solid var(--bs-border-color);
+        cursor: grab;
+    }
 `
 
 export interface SortableMenuItemProps {
@@ -48,8 +67,8 @@ export interface ThumbedMenuItemProps extends SortableMenuItemProps {
 }
 export function ThumbedMenuItem({menuItem, active, setActivatorNodeRef, listeners}:ThumbedMenuItemProps) {
     return (
-        <SortableMenuItemContainer>
-            <Button size="sm" variant="outline-secondary" style={{cursor: 'grab'}} {...listeners} ref={setActivatorNodeRef} >
+        <SortableMenuItemContainer className={classNames('sortable-item', {active: active ? 'active' : ''})}>
+            <Button size="sm" variant="outline-secondary" className="drag-thumb" {...listeners} ref={setActivatorNodeRef} >
                 <span className="bi-arrow-down-up" aria-label="Drag to sort" />
             </Button>
             <MenuItemRender item={menuItem} active={active}/>

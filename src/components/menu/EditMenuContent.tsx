@@ -1,9 +1,9 @@
-import React, {useEffect} from 'react';
-import MenuEditor from "@/components/MenuEditor";
-import MenuItemList from "@/components/items/MenuItemList";
+import {useEffect} from 'react';
+import MenuEditor from "@/components/menu/MenuEditor.tsx";
+import MenuItemList from "@/components/items/MenuItemList.tsx";
 import {Outlet, useParams} from "react-router";
-import {useAppDispatch} from "@/app/hooks";
-import {loadMenu} from "@/ducks/menu/actions";
+import {useAppDispatch} from "@/app/configureStore.ts";
+import {loadMenu} from "@/ducks/menu/actions.ts";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
@@ -14,7 +14,7 @@ export default function EditMenuContent() {
         if (params.menuId) {
             dispatch(loadMenu(params.menuId));
         }
-    }, [params.menuId]);
+    }, [params.menuId, dispatch]);
 
     return (
         <Row>

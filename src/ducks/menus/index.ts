@@ -1,8 +1,7 @@
-import {Menu} from "b2b-types";
-import {SortProps} from "chums-types";
-import {createEntityAdapter, createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import type {Menu} from "b2b-types";
+import type {SortProps} from "chums-types";
+import {createEntityAdapter, createSelector, createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import {loadMenuList} from "./actions";
-import {loadMenu, removeMenu, saveMenu} from "../menu/actions";
 import {menuSorter} from "@/ducks/menus/utils";
 
 const adapter = createEntityAdapter<Menu, number>({
@@ -48,23 +47,23 @@ const menusSlice = createSlice({
             .addCase(loadMenuList.rejected, (state) => {
                 state.loading = false;
             })
-            .addCase(loadMenu.fulfilled, (state, action) => {
-                if (action.payload) {
-                    adapter.setOne(state, action.payload);
-                } else {
-                    adapter.removeOne(state, +action.meta.arg);
-                }
-            })
-            .addCase(saveMenu.fulfilled, (state, action) => {
-                if (action.payload) {
-                    adapter.setOne(state, action.payload);
-                } else {
-                    adapter.removeOne(state, action.meta.arg.id);
-                }
-            })
-            .addCase(removeMenu.fulfilled, (state, action) => {
-                adapter.removeOne(state, action.meta.arg);
-            })
+        // .addCase(loadMenu.fulfilled, (state, action) => {
+        //     if (action.payload) {
+        //         adapter.setOne(state, action.payload);
+        //     } else {
+        //         adapter.removeOne(state, +action.meta.arg);
+        //     }
+        // })
+        // .addCase(saveMenu.fulfilled, (state, action) => {
+        //     if (action.payload) {
+        //         adapter.setOne(state, action.payload);
+        //     } else {
+        //         adapter.removeOne(state, action.meta.arg.id);
+        //     }
+        // })
+        // .addCase(removeMenu.fulfilled, (state, action) => {
+        //     adapter.removeOne(state, action.meta.arg);
+        // })
     },
     selectors: {
         selectMenuList: (state) => selectors.selectAll(state),
@@ -90,7 +89,7 @@ export const selectSortedMenuList = createSelector(
     [selectMenuList, selectMenuListSort, selectMenuListShowInactive],
     (list, sort, showInactive) => {
         return list
-            .filter(item => showInactive || !!item.status)
+            .filter(item => showInactive || item.status)
             .sort(menuSorter(sort));
     }
 )

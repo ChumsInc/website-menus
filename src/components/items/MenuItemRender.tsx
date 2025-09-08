@@ -1,8 +1,8 @@
-import React, {useCallback} from 'react';
+import {useCallback} from 'react';
 import styled from "@emotion/styled";
-import {MenuItem} from "b2b-types";
+import type {MenuItem} from "b2b-types";
 import {Button} from "react-bootstrap";
-import {Variant} from "react-bootstrap/types";
+import type {Variant} from "react-bootstrap/types";
 import {generatePath, useNavigate, useParams} from "react-router";
 
 export const MenuItemContainer = styled.div`
@@ -14,6 +14,14 @@ export const MenuItemContainer = styled.div`
     justify-content: space-between;
     align-items: center;
     background-color: var(--bs-body-bg);
+    
+    & > .btn:last-child {
+        border-right: none;
+        border-top: none;
+        border-bottom: none;
+        border-radius: 0;
+        border-left: 1px solid var(--bs-border-color);
+    }
 `
 
 export const MenuItemTitle = styled('div')`
@@ -39,14 +47,14 @@ export function MenuItemRender({
         if (item.menu?.id) {
             navigate(generatePath('/:menuId', {menuId: item.menu.id.toString()}))
         }
-    }, [item]);
+    }, [item.menu, navigate]);
 
     const clickHandler = useCallback(() => {
         if (!params.menuId || params.menuId === '0') {
             return;
         }
         navigate(generatePath('/:menuId/:itemId', {menuId: params.menuId!, itemId: item.id.toString()},))
-    }, [item]);
+    }, [item.id, navigate, params.menuId]);
 
 
     return (
@@ -57,16 +65,17 @@ export function MenuItemRender({
                     <Button type="button" size="sm" variant="link"
                             onClick={selectMenuHandler}>
                         {item.title}
+                        <span className="bi-box-arrow-in-down ms-3" aria-label="Edit Item"/>
                     </Button>
                 </MenuItemTitle>
             )}
             {!item.menu && (
                 <MenuItemTitle title={item.url}>
-                    {item.title}
+                    {item.title} <span className="bi-link-45deg" aria-label="External Link"/>
                 </MenuItemTitle>
             )}
             {!item.status && <span className="bi-lightbulb-off text-danger" aria-label="Item Disabled"/>}
-            {!!item.status && !!item.menu && !item.menu.status &&
+            {item.status && !!item.menu && !item.menu.status &&
                 <span className="bi-lightbulb-off text-warning" aria-label="Sub-Item Disabled"/>}
             <Button type="button" onClick={clickHandler} size="sm" variant={btnVariant}>
                 Edit Item

@@ -1,15 +1,16 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useSelector} from "react-redux";
-import {Menu} from "b2b-types";
-import {loadMenu, removeMenu, saveMenu} from "@/ducks/menu/actions";
-import {useAppDispatch, useAppSelector} from "@/app/hooks";
+import type {Menu} from "b2b-types";
+import {loadMenu, removeMenu, saveMenu} from "@/ducks/menu/actions.ts";
+import {useAppDispatch, useAppSelector} from "@/app/configureStore.ts";
 import Alert from "react-bootstrap/Alert";
 import {ProgressBar} from "react-bootstrap";
 import {generatePath, useNavigate, useParams} from "react-router";
-import {isMenuPayload, selectCurrentMenu, selectCurrentMenuStatus} from "@/ducks/menu";
 import isEqual from "react-fast-compare";
-import MenuEditorUI from "@/components/MenuEditorUI";
-import {defaultMenu} from "@/ducks/utils";
+import MenuEditorUI from "@/components/menu/MenuEditorUI.tsx";
+import {selectCurrentMenu, selectCurrentMenuStatus} from "@/ducks/menu";
+import {defaultMenu} from "@/ducks/utils.ts";
+import {isFulfilled} from "@reduxjs/toolkit";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const editableMenu = ({id, items, parents, ...rest}: Menu) => {
@@ -46,7 +47,7 @@ export default function MenuEditor() {
             return;
         }
         const action = await dispatch(saveMenu(menu));
-        if (menu.id === 0 && isMenuPayload(action.payload)) {
+        if (menu.id === 0 && isFulfilled(action) && action.payload) {
             navigate(generatePath("/:menuId", {menuId: action.payload.id.toString()}));
         }
     }

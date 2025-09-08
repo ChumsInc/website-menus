@@ -1,11 +1,11 @@
-import React, {ChangeEvent, FormEvent} from 'react';
-import {Menu} from "b2b-types";
-import StatusButtonGroup from "@/components/StatusButtonGroup";
-import FormColumn from "@/components/FormColumn";
+import {type ChangeEvent, type FormEvent} from 'react';
+import type {Menu} from "b2b-types";
+import StatusButtonGroup from "@/components/common/StatusButtonGroup.tsx";
+import FormColumn from "@/components/common/FormColumn.tsx";
 import {Button} from "react-bootstrap";
-import {MenuActionStatus} from "@/ducks/menu";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import type {MenuActionStatus} from "@/src/types.ts";
 
 
 export interface MenuEditorUIProps {

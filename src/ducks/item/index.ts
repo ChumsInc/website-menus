@@ -1,8 +1,7 @@
-import {MenuItem} from "b2b-types";
-import {createSlice} from "@reduxjs/toolkit";
+import type {MenuItem} from "b2b-types";
+import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import {loadMenuItem, removeMenuItem, saveMenuItem} from "./actions";
-import {loadMenu, saveMenu} from "../menu/actions";
-import {setCurrentMenu} from "@/ducks/menu";
+import {loadMenu, saveMenu, setCurrentMenu} from "@/ducks/menu/actions";
 
 export type ItemStatus = 'idle' | 'loading' | 'saving' | 'deleting';
 
@@ -16,7 +15,7 @@ export const defaultMenuItem: MenuItem = {
     title: '',
     description: '',
     menuId: 0,
-    status: 1,
+    status: true,
     parentId: 0,
     className: '',
     url: '',
@@ -32,7 +31,16 @@ const initialState: MenuItemState = {
 const itemSlice = createSlice({
     name: 'menuItem',
     initialState: initialState,
-    reducers: {},
+    reducers: {
+        updateMenuItem: (state, action: PayloadAction<Partial<MenuItem>>) => {
+            if (state.current) {
+                state.current = {...state.current, ...action.payload};
+            }
+        },
+        setCurrentMenuItem: (state, action: PayloadAction<MenuItem | null>) => {
+            state.current = action.payload;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(loadMenuItem.pending, (state, action) => {
@@ -106,7 +114,8 @@ const itemSlice = createSlice({
         selectCurrentMenuItemStatus: (state) => state.actionStatus,
     }
 })
-
+export default itemSlice;
+export const {updateMenuItem, setCurrentMenuItem} = itemSlice.actions;
 export const {selectCurrentMenuItem, selectCurrentMenuItemStatus} = itemSlice.selectors;
 
-export default itemSlice;
+

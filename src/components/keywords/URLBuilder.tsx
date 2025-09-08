@@ -1,17 +1,17 @@
-import React, {ChangeEvent, useEffect, useState} from "react";
+import React, {type ChangeEvent, useEffect, useState} from "react";
 import {useSelector} from "react-redux";
-import {keywordTitleSorter, selectKeywordsList} from "./index";
-import FormColumn from "@/components/FormColumn";
-import {Keyword} from "b2b-types";
-import InactiveKeywordAlert from "./InactiveKeywordAlert";
+import {keywordTitleSorter, selectKeywordsList} from "@/ducks/keywords";
+import FormColumn from "@/components/common/FormColumn.tsx";
+import type {Keyword} from "b2b-types";
+import InactiveKeywordAlert from "@/components/keywords/InactiveKeywordAlert.tsx";
 
 export interface URLBuilderProps {
     url: string,
     onSelectUrl: (url: string) => void,
 }
 
-const singleURL = /\/([a-z\d\-]+)/i;
-const doubleURL = /\/([a-z\d\-]+)\/([a-z\d\-]+)/i;
+const singleURL = /\/([a-z\d-]+)/i;
+const doubleURL = /\/([a-z\d-]+)\/([a-z\d-]+)/i;
 
 const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
     const keywords = useSelector(selectKeywordsList);
@@ -42,7 +42,7 @@ const URLBuilder: React.FC<URLBuilderProps> = ({url, onSelectUrl}) => {
             const [pageKeyword] = keywords.filter(kw => kw.pagetype === 'page').filter(kw => kw.keyword === key);
             setProduct(pageKeyword || null);
         }
-    }, [url]);
+    }, [keywords, url]);
 
     useEffect(() => {
         if (category && product) {

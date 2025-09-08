@@ -1,6 +1,6 @@
-import {Menu, MenuItem} from "b2b-types";
-import {fetchJSON} from "chums-components";
-import {MenuItemArg} from "../types";
+import type {Menu, MenuItem} from "b2b-types";
+import {fetchJSON} from "@chumsinc/ui-utils";
+import type {MenuItemArg} from "../types";
 
 export const fetchMenuList =  async ():Promise<Menu[]> => {
     try {
@@ -17,7 +17,7 @@ export const fetchMenuList =  async ():Promise<Menu[]> => {
     }
 }
 
-export const fetchMenu = async (id:number):Promise<Menu|null> => {
+export const fetchMenu = async (id:number|string):Promise<Menu|null> => {
     try {
         const url = `/api/b2b/menus/${encodeURIComponent(id)}`;
         const res = await fetchJSON<{menus:Menu[]}>(url);

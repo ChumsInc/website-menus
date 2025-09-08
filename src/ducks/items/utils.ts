@@ -1,4 +1,4 @@
-import {MenuItem} from "b2b-types";
+import type {MenuItem} from "b2b-types";
 
 export const prioritySort = (a: MenuItem, b: MenuItem) => a.priority - b.priority;
 

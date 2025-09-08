@@ -1,4 +1,4 @@
-import React, {HTMLAttributes} from 'react';
+import React, {type HTMLAttributes} from 'react';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";

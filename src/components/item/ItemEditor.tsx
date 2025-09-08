@@ -1,16 +1,16 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useSelector} from "react-redux";
-import {MenuItem} from "b2b-types";
+import type {MenuItem} from "b2b-types";
 import {selectCurrentMenu} from "@/ducks/menu";
-import {defaultMenuItem} from "../utils";
-import URLBuilder from "../keywords/URLBuilder";
-import {useAppDispatch, useAppSelector} from "@/app/hooks";
-import {selectCurrentMenuItem, selectCurrentMenuItemStatus} from "./index";
-import {removeMenuItem, saveMenuItem} from "./actions";
+import {defaultMenuItem} from "@/ducks/utils.ts";
+import URLBuilder from "@/components/keywords/URLBuilder.tsx";
+import {useAppDispatch, useAppSelector} from "@/app/configureStore.ts";
+import {selectCurrentMenuItem, selectCurrentMenuItemStatus} from "@/ducks/item";
+import {removeMenuItem, saveMenuItem} from "@/ducks/item/actions.ts";
 import Alert from 'react-bootstrap/Alert'
 import {ProgressBar} from "react-bootstrap";
 import isEqual from "react-fast-compare";
-import ItemEditorUI from "@/ducks/item/ItemEditorUI";
+import ItemEditorUI from "@/components/item/ItemEditorUI.tsx";
 import {generatePath, useNavigate} from "react-router";
 
 const editableItem = ({...rest}: MenuItem): Omit<MenuItem, 'id' | 'menu'> => {

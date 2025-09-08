@@ -1,9 +1,9 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
-import {MenuItem} from "b2b-types";
-import {RootState} from "../../app/configureStore";
-import {selectCurrentMenu} from "../menu/selectors";
-import {postItemSort} from "../../api/menu";
-import {selectItemsStatus} from "./selectors";
+import type {MenuItem} from "b2b-types";
+import {type RootState} from "@/app/configureStore.ts";
+import {selectCurrentMenu} from "../menu";
+import {postItemSort} from "@/api/menu.ts";
+import {selectItemsStatus} from "./index";
 
 export const saveItemSort = createAsyncThunk<MenuItem[], MenuItem[]>(
     'items/saveSort',

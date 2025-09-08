@@ -1,18 +1,18 @@
-import React, {useEffect} from 'react';
-import {loadKeywords} from "@/ducks/keywords";
-import {useAppDispatch} from "./hooks";
+import {useEffect} from 'react';
+import {useAppDispatch} from "./configureStore.ts";
 import {HashRouter, Route, Routes} from 'react-router'
 import AppContent from "@/app/AppContent";
 import Alert from "react-bootstrap/Alert";
-import EditMenuContent from "@/app/EditMenuContent";
-import EditItemContent from "@/components/item/EditItemContent";
+import EditMenuContent from "@/components/menu/EditMenuContent.tsx";
+import EditItemContent from "@/components/item/EditItemContent.tsx";
+import {loadKeywords} from "@/ducks/keywords";
 
 export default function App() {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
         dispatch(loadKeywords());
-    }, [])
+    }, [dispatch])
 
     return (
         <HashRouter>

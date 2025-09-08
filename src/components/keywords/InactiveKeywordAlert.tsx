@@ -1,5 +1,4 @@
-import React from 'react';
-import {Keyword} from "b2b-types";
+import type {Keyword} from "b2b-types";
 import Alert from "react-bootstrap/Alert";
 
 export interface InactiveKeywordAlertProps {
@@ -18,7 +17,7 @@ const pageType = (kw:Keyword) => {
     }
 }
 
-const InactiveKeywordAlert:React.FC<InactiveKeywordAlertProps> = ({keyword}) => {
+export default function InactiveKeywordAlert({keyword}:InactiveKeywordAlertProps) {
     if (!keyword || !!keyword.status) {
         return null;
     }
@@ -26,4 +25,3 @@ const InactiveKeywordAlert:React.FC<InactiveKeywordAlertProps> = ({keyword}) => 
         <Alert variant="warning">{pageType(keyword)} '<strong>{keyword.title}</strong>' is inactive</Alert>
     )
 }
-export default InactiveKeywordAlert;

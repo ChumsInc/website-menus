@@ -1,24 +1,59 @@
-import {Keyword} from "b2b-types";
-import {RootState} from "../../app/configureStore";
-import {fetchKeywords} from "../../api/keywords";
-import {createAsyncThunk, createReducer} from "@reduxjs/toolkit";
+import type {Keyword} from "b2b-types";
+import type {RootState} from "@/app/configureStore.ts";
+import {fetchKeywords} from "@/api/keywords.ts";
+import {createAsyncThunk, createEntityAdapter, createSlice} from "@reduxjs/toolkit";
+import {dismissAlert} from "@chumsinc/alert-list";
+
+const adapter = createEntityAdapter<Keyword, string>({
+    selectId: (arg) => arg.keyword,
+    sortComparer: (a, b) => a.keyword.localeCompare(b.keyword),
+})
+
+const selectors = adapter.getSelectors();
+
 
 export interface KeywordsState {
-    list: Keyword[];
-    loading: boolean;
+    status: 'idle' | 'loading' | 'rejected';
 }
 
-export const initialState: KeywordsState = {
-    list: [],
-    loading: false,
+export const extraState: KeywordsState = {
+    status: 'idle'
 }
+
+const keywordsSlice = createSlice({
+    name: 'keywords',
+    initialState: adapter.getInitialState(extraState),
+    reducers: {},
+    extraReducers: builder => {
+        builder
+            .addCase(loadKeywords.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(loadKeywords.fulfilled, (state, action) => {
+                state.status = 'idle'
+                adapter.setAll(state, action.payload)
+            })
+            .addCase(loadKeywords.rejected, (state) => {
+                state.status = 'rejected';
+            })
+            .addCase(dismissAlert, (state, action) => {
+                if (action.payload.context?.startsWith('keywords/')) {
+                    state.status = 'idle';
+                }
+            })
+    },
+    selectors: {
+        selectKeywordsList: (state) => selectors.selectAll(state),
+        selectKeywordsStatus: (state) => state.status,
+    }
+});
+
+export default keywordsSlice;
+export const {selectKeywordsList, selectKeywordsStatus} = keywordsSlice.selectors;
 
 export const keywordTitleSorter = (a: Keyword, b: Keyword) => a.title.toLowerCase() === b.title.toLowerCase()
     ? (a.keyword > b.keyword ? 1 : -1)
     : (a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1);
-
-export const selectKeywordsList = (state: RootState) => state.keywords.list;
-export const selectKeywordsLoading = (state: RootState) => state.keywords.loading;
 
 
 export const loadKeywords = createAsyncThunk<Keyword[], void>(
@@ -27,25 +62,9 @@ export const loadKeywords = createAsyncThunk<Keyword[], void>(
         return await fetchKeywords();
     },
     {
-        condition: (arg, {getState}) => {
+        condition: (_, {getState}) => {
             const state = getState() as RootState;
-            return !selectKeywordsLoading(state);
+            return selectKeywordsStatus(state) === 'idle';
         }
     }
 )
-
-const keywordsReducer = createReducer(initialState, (builder) => {
-    builder
-        .addCase(loadKeywords.pending, (state) => {
-            state.loading = true;
-        })
-        .addCase(loadKeywords.fulfilled, (state, action) => {
-            state.loading = false;
-            state.list = [...action.payload].sort(keywordTitleSorter);
-        })
-        .addCase(loadKeywords.rejected, (state) => {
-            state.loading = false;
-        })
-});
-
-export default keywordsReducer

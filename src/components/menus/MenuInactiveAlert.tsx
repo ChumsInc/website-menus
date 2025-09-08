@@ -1,7 +1,6 @@
-import React from 'react';
 import Alert from "react-bootstrap/Alert";
-import {useAppSelector} from "@/app/hooks";
-import {selectMenuById} from "@/ducks/menus/index";
+import {useAppSelector} from "@/app/configureStore";
+import {selectMenuById} from "@/ducks/menus";
 
 export interface MenuInactiveAlertProps {
     menuId?: number,

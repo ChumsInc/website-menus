@@ -1,6 +1,6 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {fetchMenuList} from "@/api/menu";
-import {RootState} from "@/app/configureStore";
+import {type RootState} from "@/app/configureStore";
 import {selectMenuListLoading} from "./index";
 
 export const loadMenuList = createAsyncThunk(
@@ -9,7 +9,7 @@ export const loadMenuList = createAsyncThunk(
         return await fetchMenuList();
     },
     {
-        condition: (arg, {getState}) => {
+        condition: (_, {getState}) => {
             const state = getState() as RootState;
             return !selectMenuListLoading(state);
         }
